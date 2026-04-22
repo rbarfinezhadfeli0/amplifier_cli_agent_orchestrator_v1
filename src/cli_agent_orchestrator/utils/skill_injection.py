@@ -7,17 +7,17 @@ does not need prompt-based catalog baking or refresh-on-skill-change.
 import json
 import logging
 import os
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator, List, Optional
-from urllib.parse import unquote, urlparse
+from typing import Any
+from urllib.parse import unquote
+from urllib.parse import urlparse
 
 import frontmatter
 
-from cli_agent_orchestrator.constants import (
-    AGENT_CONTEXT_DIR,
-    COPILOT_AGENTS_DIR,
-    Q_AGENTS_DIR,
-)
+from cli_agent_orchestrator.constants import AGENT_CONTEXT_DIR
+from cli_agent_orchestrator.constants import COPILOT_AGENTS_DIR
+from cli_agent_orchestrator.constants import Q_AGENTS_DIR
 from cli_agent_orchestrator.models.agent_profile import AgentProfile
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
 from cli_agent_orchestrator.utils.skills import build_skill_catalog
@@ -25,7 +25,7 @@ from cli_agent_orchestrator.utils.skills import build_skill_catalog
 logger = logging.getLogger(__name__)
 
 
-def compose_agent_prompt(profile: AgentProfile, base_prompt: Optional[str] = None) -> Optional[str]:
+def compose_agent_prompt(profile: AgentProfile, base_prompt: str | None = None) -> str | None:
     """Compose the baked prompt from profile prompt and global skill catalog.
 
     When *base_prompt* is provided it is used instead of ``profile.prompt``.
@@ -111,11 +111,11 @@ def refresh_agent_md_prompt(md_path: Path, profile: AgentProfile) -> bool:
     return True
 
 
-def refresh_installed_agent_for_profile(profile_name: str) -> List[Path]:
+def refresh_installed_agent_for_profile(profile_name: str) -> list[Path]:
     """Refresh installed Q and Copilot agents for one source profile."""
     profile = load_agent_profile(profile_name)
     safe_name = profile.name.replace("/", "__")
-    refreshed_paths: List[Path] = []
+    refreshed_paths: list[Path] = []
 
     q_path = Q_AGENTS_DIR / f"{safe_name}.json"
     if refresh_agent_json_prompt(q_path, profile):
@@ -128,9 +128,9 @@ def refresh_installed_agent_for_profile(profile_name: str) -> List[Path]:
     return refreshed_paths
 
 
-def refresh_all_cao_managed_agents() -> List[Path]:
+def refresh_all_cao_managed_agents() -> list[Path]:
     """Refresh every installed Q/Copilot agent managed by CAO."""
-    refreshed_paths: List[Path] = []
+    refreshed_paths: list[Path] = []
 
     # Q JSON agents — identified by resources pointing at AGENT_CONTEXT_DIR
     for json_path in _iter_installed_agent_jsons():
@@ -181,8 +181,7 @@ def refresh_all_cao_managed_agents() -> List[Path]:
             profile = load_agent_profile(profile_name)
         except Exception as exc:
             logger.warning(
-                "Skipping CAO-managed Copilot agent '%s' at %s: "
-                "source profile could not be loaded: %s",
+                "Skipping CAO-managed Copilot agent '%s' at %s: source profile could not be loaded: %s",
                 profile_name,
                 md_path,
                 exc,

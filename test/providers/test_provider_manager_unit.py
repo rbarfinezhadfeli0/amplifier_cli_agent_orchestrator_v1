@@ -1,6 +1,7 @@
 """Unit tests for ProviderManager."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -144,12 +145,14 @@ def test_get_provider_not_in_database_raises():
     """Test get_provider raises when terminal not found in database."""
     manager = ProviderManager()
 
-    with patch(
-        "cli_agent_orchestrator.providers.manager.get_terminal_metadata",
-        return_value=None,
+    with (
+        patch(
+            "cli_agent_orchestrator.providers.manager.get_terminal_metadata",
+            return_value=None,
+        ),
+        pytest.raises(ValueError, match="Terminal t1 not found in database"),
     ):
-        with pytest.raises(ValueError, match="Terminal t1 not found in database"):
-            manager.get_provider("t1")
+        manager.get_provider("t1")
 
 
 def test_cleanup_provider_handles_exception():
@@ -177,7 +180,6 @@ def test_cleanup_provider_nonexistent_terminal():
 
 def test_list_providers():
     """Test list_providers returns correct mapping."""
-    from cli_agent_orchestrator.providers.codex import CodexProvider
 
     manager = ProviderManager()
     manager.create_provider(

@@ -39,18 +39,16 @@ Run:
 
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    extract_output,
-    get_terminal_status,
-    wait_for_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import cleanup_terminal
+from test.e2e.conftest import create_terminal
+from test.e2e.conftest import extract_output
+from test.e2e.conftest import get_terminal_status
+from test.e2e.conftest import wait_for_status
 
 # ---------------------------------------------------------------------------
 # Helpers for inbox verification
@@ -148,9 +146,9 @@ def _run_assign_test(provider: str, agent_profile: str, task_message: str, conte
         # Some providers (Gemini CLI) report premature COMPLETED between the
         # initial text response and MCP tool execution. After detecting
         # COMPLETED, wait briefly and re-verify to catch this case.
-        assert wait_for_status(
-            terminal_id, "completed", timeout=COMPLETION_TIMEOUT
-        ), f"Worker did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        assert wait_for_status(terminal_id, "completed", timeout=COMPLETION_TIMEOUT), (
+            f"Worker did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        )
 
         # Stabilization: re-check after short delay to catch premature COMPLETED.
         # If the provider went back to PROCESSING, wait for COMPLETED again.
@@ -172,9 +170,7 @@ def _run_assign_test(provider: str, agent_profile: str, task_message: str, conte
 
         output_lower = output.lower()
         matched = [kw for kw in content_keywords if kw.lower() in output_lower]
-        assert (
-            matched
-        ), f"Expected at least one of {content_keywords} in output, got: {output[:300]}"
+        assert matched, f"Expected at least one of {content_keywords} in output, got: {output[:300]}"
 
     finally:
         if terminal_id and actual_session:
@@ -257,9 +253,9 @@ def _run_assign_with_callback_test(provider: str):
         assert resp.status_code == 200, f"Send task to worker failed: {resp.status_code}"
 
         # Step 5: Wait for worker to complete
-        assert wait_for_status(
-            worker_id, "completed", timeout=COMPLETION_TIMEOUT
-        ), f"Worker did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        assert wait_for_status(worker_id, "completed", timeout=COMPLETION_TIMEOUT), (
+            f"Worker did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        )
         time.sleep(5)
         recheck = get_terminal_status(worker_id)
         if recheck != "completed":
@@ -307,9 +303,7 @@ def _run_assign_with_callback_test(provider: str):
             if sup_status in ("processing", "completed"):
                 transitioned = True
                 break
-        assert transitioned, (
-            f"Supervisor should have transitioned after receiving callback, " f"got: {sup_status}"
-        )
+        assert transitioned, f"Supervisor should have transitioned after receiving callback, got: {sup_status}"
 
     finally:
         if actual_session:

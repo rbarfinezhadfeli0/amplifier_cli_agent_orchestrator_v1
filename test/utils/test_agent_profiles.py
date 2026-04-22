@@ -2,12 +2,14 @@
 
 import logging
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.agent_profile import AgentProfile
-from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile, resolve_provider
+from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
+from cli_agent_orchestrator.utils.agent_profiles import resolve_provider
 
 
 class TestLoadAgentProfile:
@@ -43,9 +45,7 @@ class TestLoadAgentProfile:
     @patch("cli_agent_orchestrator.utils.agent_profiles.resources")
     @patch("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR")
     @patch("cli_agent_orchestrator.utils.agent_profiles.frontmatter")
-    def test_load_agent_profile_from_builtin_store(
-        self, mock_frontmatter, mock_local_dir, mock_resources
-    ):
+    def test_load_agent_profile_from_builtin_store(self, mock_frontmatter, mock_local_dir, mock_resources):
         """Test loading agent profile from built-in store when local not found."""
         # Setup mock local directory (not found)
         mock_local_path = MagicMock(spec=Path)
@@ -115,9 +115,7 @@ class TestResolveProvider:
     @patch("cli_agent_orchestrator.utils.agent_profiles.load_agent_profile")
     def test_returns_profile_provider_when_valid(self, mock_load):
         """Profile with a valid provider key should override the fallback."""
-        mock_load.return_value = AgentProfile(
-            name="developer", description="Dev agent", provider="claude_code"
-        )
+        mock_load.return_value = AgentProfile(name="developer", description="Dev agent", provider="claude_code")
 
         result = resolve_provider("developer", fallback_provider="kiro_cli")
 
@@ -136,9 +134,7 @@ class TestResolveProvider:
     @patch("cli_agent_orchestrator.utils.agent_profiles.load_agent_profile")
     def test_returns_fallback_when_provider_is_invalid(self, mock_load, caplog):
         """Profile with an invalid provider value should fall back and log a warning."""
-        mock_load.return_value = AgentProfile(
-            name="developer", description="Dev agent", provider="claud_code"
-        )
+        mock_load.return_value = AgentProfile(name="developer", description="Dev agent", provider="claud_code")
 
         with caplog.at_level(logging.WARNING):
             result = resolve_provider("developer", fallback_provider="kiro_cli")
@@ -162,18 +158,14 @@ class TestResolveProvider:
         from cli_agent_orchestrator.constants import PROVIDERS
 
         for provider_value in PROVIDERS:
-            mock_load.return_value = AgentProfile(
-                name="agent", description="test", provider=provider_value
-            )
+            mock_load.return_value = AgentProfile(name="agent", description="test", provider=provider_value)
             result = resolve_provider("agent", fallback_provider="kiro_cli")
             assert result == provider_value
 
     @patch("cli_agent_orchestrator.utils.agent_profiles.load_agent_profile")
     def test_returns_fallback_when_provider_is_empty_string(self, mock_load):
         """Empty string provider should be treated as absent and fall back."""
-        mock_load.return_value = AgentProfile(
-            name="developer", description="Dev agent", provider=""
-        )
+        mock_load.return_value = AgentProfile(name="developer", description="Dev agent", provider="")
 
         result = resolve_provider("developer", fallback_provider="kiro_cli")
 
@@ -204,9 +196,7 @@ class TestListAgentProfiles:
 
         # Setup local store dir
         mock_local_dir.exists.return_value = True
-        mock_local_dir.resolve.return_value = Path(
-            "/home/user/.aws/cli-agent-orchestrator/agent-store"
-        )
+        mock_local_dir.resolve.return_value = Path("/home/user/.aws/cli-agent-orchestrator/agent-store")
 
         # Setup provider dirs: kiro_cli dir with a third profile
         mock_get_agent_dirs.return_value = {
@@ -251,18 +241,14 @@ class TestListAgentProfiles:
         # Built-in store has "developer" profile
         mock_builtin_file = MagicMock()
         mock_builtin_file.name = "developer.md"
-        mock_builtin_file.read_text.return_value = (
-            "---\ndescription: Built-in developer\n---\nPrompt"
-        )
+        mock_builtin_file.read_text.return_value = "---\ndescription: Built-in developer\n---\nPrompt"
         mock_agent_store = MagicMock()
         mock_agent_store.iterdir.return_value = [mock_builtin_file]
         mock_resources.files.return_value = mock_agent_store
 
         # Local store also has "developer" profile — should be skipped (built-in scanned first)
         mock_local_dir.exists.return_value = True
-        mock_local_dir.resolve.return_value = Path(
-            "/home/user/.aws/cli-agent-orchestrator/agent-store"
-        )
+        mock_local_dir.resolve.return_value = Path("/home/user/.aws/cli-agent-orchestrator/agent-store")
 
         def fake_scan(directory, source_label, profiles):
             if source_label == "local":
@@ -535,9 +521,7 @@ class TestLoadAgentProfileEnvResolution:
         profile_path = local_store_dir / "service-agent.md"
         self._write_profile(profile_path, "Body token: ${API_TOKEN}")
 
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir)
         monkeypatch.setattr("cli_agent_orchestrator.utils.env.CAO_ENV_FILE", env_file)
 
         profile = load_agent_profile("service-agent")
@@ -560,9 +544,7 @@ class TestLoadAgentProfileEnvResolution:
         profile_path = local_store_dir / "service-agent.md"
         self._write_profile(profile_path, "Body token: ${API_TOKEN}")
 
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir)
         monkeypatch.setattr("cli_agent_orchestrator.utils.env.CAO_ENV_FILE", tmp_path / ".env")
 
         profile = load_agent_profile("service-agent")
@@ -580,13 +562,9 @@ class TestLoadAgentProfileEnvResolution:
         local_store_dir = tmp_path / "agent-store"
         local_store_dir.mkdir()
         profile_path = local_store_dir / "plain-agent.md"
-        profile_path.write_text(
-            "---\nname: plain-agent\ndescription: Plain agent\n---\nPlain system prompt\n"
-        )
+        profile_path.write_text("---\nname: plain-agent\ndescription: Plain agent\n---\nPlain system prompt\n")
 
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store_dir)
         monkeypatch.setattr("cli_agent_orchestrator.utils.env.CAO_ENV_FILE", tmp_path / ".env")
 
         profile = load_agent_profile("plain-agent")

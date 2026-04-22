@@ -34,13 +34,12 @@ import re
 import shlex
 import time
 from pathlib import Path
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
 
 logger = logging.getLogger(__name__)
 
@@ -133,9 +132,7 @@ PROCESSING_SPINNER_PATTERN = r"[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏].*\(esc to cancel
 RESPONDING_WITH_PATTERN = r"Responding with\s+\S+"
 
 # Generic error patterns for detecting failure states in terminal output.
-ERROR_PATTERN = (
-    r"^(?:Error:|ERROR:|Traceback \(most recent call last\):|ConnectionError:|APIError:)"
-)
+ERROR_PATTERN = r"^(?:Error:|ERROR:|Traceback \(most recent call last\):|ConnectionError:|APIError:)"
 
 
 class GeminiCliProvider(BaseProvider):
@@ -152,9 +149,9 @@ class GeminiCliProvider(BaseProvider):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[list] = None,
-        skill_prompt: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list | None = None,
+        skill_prompt: str | None = None,
     ):
         """Initialize provider state."""
         super().__init__(terminal_id, session_name, window_name, allowed_tools, skill_prompt)
@@ -182,11 +179,11 @@ class GeminiCliProvider(BaseProvider):
         # Gemini CLI reads GEMINI.md from the working directory for
         # project-level instructions. We create this file during
         # initialization and remove it during cleanup.
-        self._gemini_md_path: Optional[str] = None
+        self._gemini_md_path: str | None = None
         # Backup path for existing GEMINI.md (restored during cleanup).
-        self._gemini_md_backup_path: Optional[str] = None
+        self._gemini_md_backup_path: str | None = None
         # Path to Policy Engine TOML file for tool restrictions (cleaned up on exit).
-        self._policy_path: Optional[str] = None
+        self._policy_path: str | None = None
 
     def _build_gemini_command(self) -> str:
         """Build Gemini CLI command with appropriate flags.
@@ -237,9 +234,7 @@ class GeminiCliProvider(BaseProvider):
                 system_prompt = self._apply_skill_prompt(system_prompt)
                 if system_prompt:
                     # Write full system prompt to GEMINI.md for persistent context.
-                    working_dir = tmux_client.get_pane_working_directory(
-                        self.session_name, self.window_name
-                    )
+                    working_dir = tmux_client.get_pane_working_directory(self.session_name, self.window_name)
                     if working_dir:
                         gemini_md_path = os.path.join(working_dir, "GEMINI.md")
                         backup_path = gemini_md_path + ".cao_backup"
@@ -501,8 +496,7 @@ class GeminiCliProvider(BaseProvider):
                 f"last 50 lines:\n{diag_last_50}"
             )
             raise TimeoutError(
-                f"Gemini CLI initialization timed out after {init_timeout}s. "
-                f"Last status: {self.get_status()}"
+                f"Gemini CLI initialization timed out after {init_timeout}s. Last status: {self.get_status()}"
             )
 
         self._initialized = True
@@ -517,7 +511,7 @@ class GeminiCliProvider(BaseProvider):
         """
         self._received_input_after_init = True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Gemini CLI status by analyzing terminal output.
 
         Status detection logic:
@@ -584,11 +578,7 @@ class GeminiCliProvider(BaseProvider):
                 # AFTER initialize() completes. During init, we must return
                 # COMPLETED so initialize() can detect when -i processing
                 # finishes (otherwise init would wait for COMPLETED forever).
-                if (
-                    self._initialized
-                    and self._uses_prompt_interactive
-                    and not self._received_input_after_init
-                ):
+                if self._initialized and self._uses_prompt_interactive and not self._received_input_after_init:
                     return TerminalStatus.IDLE
                 return TerminalStatus.COMPLETED
 
@@ -755,7 +745,7 @@ class GeminiCliProvider(BaseProvider):
                 os.remove(self._gemini_md_path)
                 if self._gemini_md_backup_path and os.path.exists(self._gemini_md_backup_path):
                     os.rename(self._gemini_md_backup_path, self._gemini_md_path)
-                    logger.info(f"Restored original GEMINI.md from backup")
+                    logger.info("Restored original GEMINI.md from backup")
             except Exception as e:
                 logger.warning(f"Failed to clean up GEMINI.md: {e}")
         self._gemini_md_path = None

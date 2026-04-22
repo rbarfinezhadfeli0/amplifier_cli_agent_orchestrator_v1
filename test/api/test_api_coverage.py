@@ -4,11 +4,11 @@ Covers: WebSocket localhost guard, list_all_terminals endpoint,
 flow path traversal validation, and remaining error branches.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.api.main import CreateFlowRequest, app
+from cli_agent_orchestrator.api.main import CreateFlowRequest
 
 
 class TestFlowNameValidation:
@@ -46,9 +46,7 @@ class TestAgentProfilesEndpoint:
 
     def test_list_profiles_success(self, client):
         with patch("cli_agent_orchestrator.utils.agent_profiles.list_agent_profiles") as mock_list:
-            mock_list.return_value = [
-                {"name": "dev", "description": "Developer", "source": "built-in"}
-            ]
+            mock_list.return_value = [{"name": "dev", "description": "Developer", "source": "built-in"}]
             resp = client.get("/agents/profiles")
             assert resp.status_code == 200
             assert len(resp.json()) == 1

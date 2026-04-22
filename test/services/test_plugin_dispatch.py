@@ -1,7 +1,8 @@
 """Tests for plugin dispatch adapter behavior."""
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 

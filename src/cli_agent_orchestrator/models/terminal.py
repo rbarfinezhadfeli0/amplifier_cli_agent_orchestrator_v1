@@ -1,8 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, List, Optional
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import StringConstraints
 
 from cli_agent_orchestrator.models.provider import ProviderType
 
@@ -29,9 +32,7 @@ class Terminal(BaseModel):
     name: str = Field(..., description="Terminal/window name")
     provider: ProviderType = Field(..., description="CLI tool provider")
     session_name: str = Field(..., description="Session name")
-    agent_profile: Optional[str] = Field(None, description="Agent profile")
-    allowed_tools: Optional[List[str]] = Field(None, description="Allowed CAO tools")
-    status: Optional[TerminalStatus] = Field(
-        None, description="Current terminal status (live only)"
-    )
-    last_active: Optional[datetime] = Field(None, description="Last active timestamp")
+    agent_profile: str | None = Field(None, description="Agent profile")
+    allowed_tools: list[str] | None = Field(None, description="Allowed CAO tools")
+    status: TerminalStatus | None = Field(None, description="Current terminal status (live only)")
+    last_active: datetime | None = Field(None, description="Last active timestamp")

@@ -8,26 +8,25 @@ import os
 import re
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.providers.kimi_cli import (
-    ANSI_CODE_PATTERN,
-    ERROR_PATTERN,
-    IDLE_PROMPT_PATTERN,
-    IDLE_PROMPT_PATTERN_LOG,
-    IDLE_PROMPT_TAIL_LINES,
-    RESPONSE_BULLET_PATTERN,
-    STATUS_BAR_PATTERN,
-    THINKING_BULLET_RAW_PATTERN,
-    USER_INPUT_BOX_END_PATTERN,
-    USER_INPUT_BOX_START_PATTERN,
-    WELCOME_BANNER_PATTERN,
-    KimiCliProvider,
-    ProviderError,
-)
+from cli_agent_orchestrator.providers.kimi_cli import ANSI_CODE_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import ERROR_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import IDLE_PROMPT_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import IDLE_PROMPT_PATTERN_LOG
+from cli_agent_orchestrator.providers.kimi_cli import IDLE_PROMPT_TAIL_LINES
+from cli_agent_orchestrator.providers.kimi_cli import RESPONSE_BULLET_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import STATUS_BAR_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import THINKING_BULLET_RAW_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import USER_INPUT_BOX_END_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import USER_INPUT_BOX_START_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import WELCOME_BANNER_PATTERN
+from cli_agent_orchestrator.providers.kimi_cli import KimiCliProvider
+from cli_agent_orchestrator.providers.kimi_cli import ProviderError
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -80,9 +79,7 @@ class TestKimiCliProviderInitialization:
     @patch("cli_agent_orchestrator.providers.kimi_cli.wait_for_shell", return_value=True)
     @patch("cli_agent_orchestrator.providers.kimi_cli.tmux_client")
     @patch("cli_agent_orchestrator.providers.kimi_cli.load_agent_profile")
-    def test_initialize_with_agent_profile(
-        self, mock_load, mock_tmux, mock_wait_shell, mock_wait_status
-    ):
+    def test_initialize_with_agent_profile(self, mock_load, mock_tmux, mock_wait_shell, mock_wait_status):
         """Test initialization with agent profile creates temp files."""
         mock_profile = MagicMock()
         mock_profile.model = None
@@ -116,9 +113,7 @@ class TestKimiCliProviderInitialization:
     @patch("cli_agent_orchestrator.providers.kimi_cli.wait_for_shell", return_value=True)
     @patch("cli_agent_orchestrator.providers.kimi_cli.tmux_client")
     @patch("cli_agent_orchestrator.providers.kimi_cli.load_agent_profile")
-    def test_initialize_with_mcp_servers(
-        self, mock_load, mock_tmux, mock_wait_shell, mock_wait_status
-    ):
+    def test_initialize_with_mcp_servers(self, mock_load, mock_tmux, mock_wait_shell, mock_wait_status):
         """Test initialization with MCP servers in profile adds --mcp-config and modifies config.toml."""
         mock_profile = MagicMock()
         mock_profile.model = None
@@ -370,12 +365,7 @@ class TestKimiCliProviderStatusDetection:
         assert provider._has_received_input is False
 
         # PROCESSING output with user input box visible
-        output = (
-            "╭──────────────────╮\n"
-            "│ hello               │\n"
-            "╰──────────────────╯\n"
-            "Response content streaming...\n"
-        )
+        output = "╭──────────────────╮\n│ hello               │\n╰──────────────────╯\nResponse content streaming...\n"
         mock_tmux.get_history.return_value = output
         status = provider.get_status()
         assert status == TerminalStatus.PROCESSING
@@ -444,12 +434,7 @@ class TestKimiCliProviderMessageExtraction:
     def test_extract_message_empty_response(self):
         """Test ValueError on empty response after input box."""
         provider = KimiCliProvider("term-1", "session-1", "window-1")
-        output = (
-            "╭──────────────────╮\n"
-            "│ test message      │\n"
-            "╰──────────────────╯\n"
-            "user@my-app💫\n"
-        )
+        output = "╭──────────────────╮\n│ test message      │\n╰──────────────────╯\nuser@my-app💫\n"
         with pytest.raises(ValueError, match="Empty Kimi CLI response"):
             provider.extract_last_message_from_script(output)
 
@@ -714,9 +699,7 @@ class TestKimiCliProviderBuildCommand:
         mock_profile = MagicMock()
         mock_profile.model = None
         mock_profile.system_prompt = None
-        mock_profile.mcpServers = {
-            "cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}
-        }
+        mock_profile.mcpServers = {"cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}}
         mock_load.return_value = mock_profile
 
         # Create a fake config.toml
@@ -750,9 +733,7 @@ class TestKimiCliProviderBuildCommand:
         mock_profile = MagicMock()
         mock_profile.model = None
         mock_profile.system_prompt = None
-        mock_profile.mcpServers = {
-            "cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}
-        }
+        mock_profile.mcpServers = {"cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}}
         mock_load.return_value = mock_profile
 
         fake_kimi_dir = tmp_path / ".kimi"
@@ -806,9 +787,7 @@ class TestKimiCliProviderBuildCommand:
         mock_profile = MagicMock()
         mock_profile.model = None
         mock_profile.system_prompt = None
-        mock_profile.mcpServers = {
-            "cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}
-        }
+        mock_profile.mcpServers = {"cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}}
         mock_load.return_value = mock_profile
 
         KimiCliProvider._mcp_timeout_configured = False
@@ -828,9 +807,7 @@ class TestKimiCliProviderBuildCommand:
         mock_profile = MagicMock()
         mock_profile.model = None
         mock_profile.system_prompt = None
-        mock_profile.mcpServers = {
-            "cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}
-        }
+        mock_profile.mcpServers = {"cao-mcp-server": {"command": "uv", "args": ["run", "cao-mcp-server"]}}
         mock_load.return_value = mock_profile
 
         fake_kimi_dir = tmp_path / ".kimi"

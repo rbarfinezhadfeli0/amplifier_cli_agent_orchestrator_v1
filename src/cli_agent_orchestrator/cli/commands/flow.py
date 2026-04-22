@@ -1,7 +1,5 @@
 """Flow commands for CLI Agent Orchestrator."""
 
-from datetime import datetime
-
 import click
 
 from cli_agent_orchestrator.clients.database import init_db
@@ -38,9 +36,7 @@ def list():
             click.echo("No flows found")
             return
 
-        click.echo(
-            f"{'Name':<20} {'Schedule':<15} {'Agent':<15} {'Last Run':<20} {'Next Run':<20} {'Enabled':<8}"
-        )
+        click.echo(f"{'Name':<20} {'Schedule':<15} {'Agent':<15} {'Last Run':<20} {'Next Run':<20} {'Enabled':<8}")
         click.echo("-" * 110)
 
         for f in flows:

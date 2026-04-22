@@ -1,26 +1,26 @@
 """Tests for plugin event emission from service-layer operations."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.agent_profile import AgentProfile
 from cli_agent_orchestrator.models.inbox import MessageStatus
-from cli_agent_orchestrator.models.terminal import Terminal, TerminalStatus
-from cli_agent_orchestrator.plugins import (
-    PostCreateSessionEvent,
-    PostCreateTerminalEvent,
-    PostKillSessionEvent,
-    PostKillTerminalEvent,
-    PostSendMessageEvent,
-)
+from cli_agent_orchestrator.models.terminal import Terminal
+from cli_agent_orchestrator.models.terminal import TerminalStatus
+from cli_agent_orchestrator.plugins import PostCreateSessionEvent
+from cli_agent_orchestrator.plugins import PostCreateTerminalEvent
+from cli_agent_orchestrator.plugins import PostKillSessionEvent
+from cli_agent_orchestrator.plugins import PostKillTerminalEvent
+from cli_agent_orchestrator.plugins import PostSendMessageEvent
 from cli_agent_orchestrator.services.inbox_service import check_and_send_pending_messages
-from cli_agent_orchestrator.services.session_service import create_session, delete_session
-from cli_agent_orchestrator.services.terminal_service import (
-    create_terminal,
-    delete_terminal,
-    send_input,
-)
+from cli_agent_orchestrator.services.session_service import create_session
+from cli_agent_orchestrator.services.session_service import delete_session
+from cli_agent_orchestrator.services.terminal_service import create_terminal
+from cli_agent_orchestrator.services.terminal_service import delete_terminal
+from cli_agent_orchestrator.services.terminal_service import send_input
 
 
 def _registry_mock() -> MagicMock:
@@ -332,9 +332,7 @@ class TestMessagePluginEvents:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_send_input_does_not_dispatch_on_failure(
-        self, mock_get_metadata, mock_provider_manager, mock_tmux
-    ):
+    def test_send_input_does_not_dispatch_on_failure(self, mock_get_metadata, mock_provider_manager, mock_tmux):
         """Message delivery failures must not emit post_send_message."""
         registry = _registry_mock()
         mock_get_metadata.return_value = {

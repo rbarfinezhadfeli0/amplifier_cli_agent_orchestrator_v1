@@ -2,8 +2,11 @@
 
 import pytest
 
-from cli_agent_orchestrator.plugins.base import _HOOK_EVENT_ATTR, CaoPlugin, hook
-from cli_agent_orchestrator.plugins.events import PostCreateSessionEvent, PostSendMessageEvent
+from cli_agent_orchestrator.plugins.base import _HOOK_EVENT_ATTR
+from cli_agent_orchestrator.plugins.base import CaoPlugin
+from cli_agent_orchestrator.plugins.base import hook
+from cli_agent_orchestrator.plugins.events import PostCreateSessionEvent
+from cli_agent_orchestrator.plugins.events import PostSendMessageEvent
 
 
 class ExamplePlugin(CaoPlugin):

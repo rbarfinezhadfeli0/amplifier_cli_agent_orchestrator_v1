@@ -1,11 +1,13 @@
 """Tests for the load_skill MCP tool."""
 
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import requests
 
-from cli_agent_orchestrator.mcp_server.server import load_skill, mcp
+from cli_agent_orchestrator.mcp_server.server import load_skill
+from cli_agent_orchestrator.mcp_server.server import mcp
 
 
 def _run_coroutine(coroutine):
@@ -118,9 +120,7 @@ class TestLoadSkillTool:
         assert "full Markdown body of an available skill" in description
         assert "need its full instructions at runtime" in description
 
-    @patch(
-        "cli_agent_orchestrator.mcp_server.server._load_skill_impl", return_value="# Loaded skill"
-    )
+    @patch("cli_agent_orchestrator.mcp_server.server._load_skill_impl", return_value="# Loaded skill")
     def test_tool_delegates_to_impl(self, mock_load_skill_impl):
         """The public MCP tool should delegate to the helper implementation."""
         # FastMCP 2.x exposes .fn, 3.x the decorated function is directly callable

@@ -2,7 +2,9 @@
 
 from string import Template
 
-from dotenv import dotenv_values, set_key, unset_key
+from dotenv import dotenv_values
+from dotenv import set_key
+from dotenv import unset_key
 
 from cli_agent_orchestrator.constants import CAO_ENV_FILE
 

@@ -2,14 +2,12 @@
 
 from datetime import timedelta
 
-from cli_agent_orchestrator.plugins.events import (
-    CaoEvent,
-    PostCreateSessionEvent,
-    PostCreateTerminalEvent,
-    PostKillSessionEvent,
-    PostKillTerminalEvent,
-    PostSendMessageEvent,
-)
+from cli_agent_orchestrator.plugins.events import CaoEvent
+from cli_agent_orchestrator.plugins.events import PostCreateSessionEvent
+from cli_agent_orchestrator.plugins.events import PostCreateTerminalEvent
+from cli_agent_orchestrator.plugins.events import PostKillSessionEvent
+from cli_agent_orchestrator.plugins.events import PostKillTerminalEvent
+from cli_agent_orchestrator.plugins.events import PostSendMessageEvent
 
 
 class TestEventDefaults:

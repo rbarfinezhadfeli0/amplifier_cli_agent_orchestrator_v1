@@ -2,14 +2,22 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, declarative_base, sessionmaker
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-from cli_agent_orchestrator.constants import DATABASE_URL, DB_DIR, DEFAULT_PROVIDER
+from cli_agent_orchestrator.constants import DATABASE_URL
+from cli_agent_orchestrator.constants import DB_DIR
 from cli_agent_orchestrator.models.flow import Flow
-from cli_agent_orchestrator.models.inbox import InboxMessage, MessageStatus
+from cli_agent_orchestrator.models.inbox import InboxMessage
+from cli_agent_orchestrator.models.inbox import MessageStatus
 
 logger = logging.getLogger(__name__)
 
@@ -95,9 +103,9 @@ def create_terminal(
     tmux_session: str,
     tmux_window: str,
     provider: str,
-    agent_profile: Optional[str] = None,
-    allowed_tools: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    agent_profile: str | None = None,
+    allowed_tools: list[str] | None = None,
+) -> dict[str, Any]:
     """Create terminal metadata record."""
     import json as _json
 
@@ -122,7 +130,7 @@ def create_terminal(
         }
 
 
-def get_terminal_metadata(terminal_id: str) -> Optional[Dict[str, Any]]:
+def get_terminal_metadata(terminal_id: str) -> dict[str, Any] | None:
     """Get terminal metadata by ID."""
     import json as _json
 
@@ -146,7 +154,7 @@ def get_terminal_metadata(terminal_id: str) -> Optional[Dict[str, Any]]:
         }
 
 
-def list_terminals_by_session(tmux_session: str) -> List[Dict[str, Any]]:
+def list_terminals_by_session(tmux_session: str) -> list[dict[str, Any]]:
     """List all terminals in a tmux session."""
     with SessionLocal() as db:
         terminals = db.query(TerminalModel).filter(TerminalModel.tmux_session == tmux_session).all()
@@ -174,7 +182,7 @@ def update_last_active(terminal_id: str) -> bool:
         return False
 
 
-def list_all_terminals() -> List[Dict[str, Any]]:
+def list_all_terminals() -> list[dict[str, Any]]:
     """List all terminals."""
     with SessionLocal() as db:
         terminals = db.query(TerminalModel).all()
@@ -202,9 +210,7 @@ def delete_terminal(terminal_id: str) -> bool:
 def delete_terminals_by_session(tmux_session: str) -> int:
     """Delete all terminals in a session."""
     with SessionLocal() as db:
-        deleted = (
-            db.query(TerminalModel).filter(TerminalModel.tmux_session == tmux_session).delete()
-        )
+        deleted = db.query(TerminalModel).filter(TerminalModel.tmux_session == tmux_session).delete()
         db.commit()
         return deleted
 
@@ -231,14 +237,12 @@ def create_inbox_message(sender_id: str, receiver_id: str, message: str) -> Inbo
         )
 
 
-def get_pending_messages(receiver_id: str, limit: int = 1) -> List[InboxMessage]:
+def get_pending_messages(receiver_id: str, limit: int = 1) -> list[InboxMessage]:
     """Get pending messages ordered by created_at ASC (oldest first)."""
     return get_inbox_messages(receiver_id, limit=limit, status=MessageStatus.PENDING)
 
 
-def get_inbox_messages(
-    receiver_id: str, limit: int = 10, status: Optional[MessageStatus] = None
-) -> List[InboxMessage]:
+def get_inbox_messages(receiver_id: str, limit: int = 10, status: MessageStatus | None = None) -> list[InboxMessage]:
     """Get inbox messages with optional status filter ordered by created_at ASC (oldest first).
 
     Args:
@@ -320,7 +324,7 @@ def create_flow(
         )
 
 
-def get_flow(name: str) -> Optional[Flow]:
+def get_flow(name: str) -> Flow | None:
     """Get flow by name."""
     with SessionLocal() as db:
         flow = db.query(FlowModel).filter(FlowModel.name == name).first()
@@ -339,7 +343,7 @@ def get_flow(name: str) -> Optional[Flow]:
         )
 
 
-def list_flows() -> List[Flow]:
+def list_flows() -> list[Flow]:
     """List all flows."""
     with SessionLocal() as db:
         flows = db.query(FlowModel).order_by(FlowModel.next_run).all()
@@ -371,7 +375,7 @@ def update_flow_run_times(name: str, last_run: datetime, next_run: datetime) -> 
         return False
 
 
-def update_flow_enabled(name: str, enabled: bool, next_run: Optional[datetime] = None) -> bool:
+def update_flow_enabled(name: str, enabled: bool, next_run: datetime | None = None) -> bool:
     """Update flow enabled status and optionally next_run."""
     with SessionLocal() as db:
         flow = db.query(FlowModel).filter(FlowModel.name == name).first()
@@ -392,13 +396,11 @@ def delete_flow(name: str) -> bool:
         return deleted > 0
 
 
-def get_flows_to_run() -> List[Flow]:
+def get_flows_to_run() -> list[Flow]:
     """Get enabled flows where next_run <= now."""
     with SessionLocal() as db:
         now = datetime.now()
-        flows = (
-            db.query(FlowModel).filter(FlowModel.enabled == True, FlowModel.next_run <= now).all()
-        )
+        flows = db.query(FlowModel).filter(FlowModel.enabled == True, FlowModel.next_run <= now).all()
         return [
             Flow(
                 name=f.name,

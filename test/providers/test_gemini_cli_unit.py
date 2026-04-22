@@ -6,31 +6,30 @@ pattern matching, and cleanup — targeting >90% code coverage.
 
 import re
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.providers.gemini_cli import (
-    ANSI_CODE_PATTERN,
-    ERROR_PATTERN,
-    IDLE_PROMPT_PATTERN,
-    IDLE_PROMPT_PATTERN_LOG,
-    IDLE_PROMPT_TAIL_LINES,
-    INPUT_BOX_BOTTOM_PATTERN,
-    INPUT_BOX_TOP_PATTERN,
-    MODEL_INDICATOR_PATTERN,
-    PROCESSING_SPINNER_PATTERN,
-    QUERY_BOX_PREFIX_PATTERN,
-    RESPONDING_WITH_PATTERN,
-    RESPONSE_PREFIX_PATTERN,
-    STATUS_BAR_PATTERN,
-    TOOL_CALL_BOX_PATTERN,
-    WELCOME_BANNER_PATTERN,
-    YOLO_INDICATOR_PATTERN,
-    GeminiCliProvider,
-    ProviderError,
-)
+from cli_agent_orchestrator.providers.gemini_cli import ANSI_CODE_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import ERROR_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import IDLE_PROMPT_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import IDLE_PROMPT_PATTERN_LOG
+from cli_agent_orchestrator.providers.gemini_cli import IDLE_PROMPT_TAIL_LINES
+from cli_agent_orchestrator.providers.gemini_cli import INPUT_BOX_BOTTOM_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import INPUT_BOX_TOP_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import MODEL_INDICATOR_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import PROCESSING_SPINNER_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import QUERY_BOX_PREFIX_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import RESPONDING_WITH_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import RESPONSE_PREFIX_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import STATUS_BAR_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import TOOL_CALL_BOX_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import WELCOME_BANNER_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import YOLO_INDICATOR_PATTERN
+from cli_agent_orchestrator.providers.gemini_cli import GeminiCliProvider
+from cli_agent_orchestrator.providers.gemini_cli import ProviderError
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -101,9 +100,7 @@ class TestGeminiCliProviderInitialization:
     @patch("cli_agent_orchestrator.providers.gemini_cli.wait_for_shell", return_value=True)
     @patch("cli_agent_orchestrator.providers.gemini_cli.tmux_client")
     @patch("cli_agent_orchestrator.providers.gemini_cli.load_agent_profile")
-    def test_initialize_with_mcp_servers(
-        self, mock_load, mock_tmux, mock_wait_shell, mock_time, tmp_path
-    ):
+    def test_initialize_with_mcp_servers(self, mock_load, mock_tmux, mock_wait_shell, mock_time, tmp_path):
         """Test initialization with MCP servers writes to settings.json."""
         mock_time.time.side_effect = [0, 0, 0, 0, 0]
         mock_time.sleep = MagicMock()
@@ -126,9 +123,7 @@ class TestGeminiCliProviderInitialization:
         settings_file = settings_dir / "settings.json"
 
         with patch("cli_agent_orchestrator.providers.gemini_cli.Path.home", return_value=tmp_path):
-            provider = GeminiCliProvider(
-                "term-1", "session-1", "window-1", agent_profile="developer"
-            )
+            provider = GeminiCliProvider("term-1", "session-1", "window-1", agent_profile="developer")
             result = provider.initialize()
 
         assert result is True
@@ -196,9 +191,7 @@ class TestGeminiCliProviderInitialization:
         # be accepted when -i is used). Third: completed state (response + idle).
         idle_output = " *   Type your message or @path/to/file\n"
         completed_output = (
-            "> You are a supervisor.\n"
-            "✦ I understand. I am a supervisor.\n"
-            " *   Type your message or @path/to/file\n"
+            "> You are a supervisor.\n✦ I understand. I am a supervisor.\n *   Type your message or @path/to/file\n"
         )
         mock_tmux.get_history.side_effect = [
             "CAO_SHELL_READY",
@@ -795,9 +788,7 @@ class TestGeminiCliProviderBuildCommand:
 
     @patch("cli_agent_orchestrator.providers.gemini_cli.tmux_client")
     @patch("cli_agent_orchestrator.providers.gemini_cli.load_agent_profile")
-    def test_build_command_system_prompt_backs_up_existing_gemini_md(
-        self, mock_load, mock_tmux, tmp_path
-    ):
+    def test_build_command_system_prompt_backs_up_existing_gemini_md(self, mock_load, mock_tmux, tmp_path):
         """Test GEMINI.md backup when user already has one in the working directory."""
         # Create an existing GEMINI.md
         existing_md = tmp_path / "GEMINI.md"
@@ -1151,9 +1142,7 @@ class TestGeminiCliProviderPatterns:
 
     def test_processing_spinner_pattern(self):
         """Test processing spinner detection (Braille dots + esc to cancel)."""
-        assert re.search(
-            PROCESSING_SPINNER_PATTERN, "⠴ Refining Delegation Parameters (esc to cancel, 50s)"
-        )
+        assert re.search(PROCESSING_SPINNER_PATTERN, "⠴ Refining Delegation Parameters (esc to cancel, 50s)")
         assert re.search(
             PROCESSING_SPINNER_PATTERN,
             "⠧ Clarifying the Template Retrieval (esc to cancel, 1m 55s)",

@@ -4,9 +4,8 @@ Covers: McpServer model_dump path, bypass permissions prompt handling,
 and idle prompt early return in _handle_startup_prompts.
 """
 
-import re
-import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -54,9 +53,7 @@ class TestHandleStartupPromptsBranches:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_bypass_permissions_prompt(self, mock_tmux, mock_subprocess, provider):
         """Detects bypass permissions prompt and sends Down + Enter."""
-        mock_tmux.get_history.return_value = (
-            "⚠ Bypass Permissions mode\n" "1. No, exit\n" "2. Yes, I accept\n"
-        )
+        mock_tmux.get_history.return_value = "⚠ Bypass Permissions mode\n1. No, exit\n2. Yes, I accept\n"
 
         provider._handle_startup_prompts(timeout=1.0)
 
@@ -66,7 +63,6 @@ class TestHandleStartupPromptsBranches:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_idle_prompt_detected_early_return(self, mock_tmux, provider):
         """When idle prompt is visible, returns immediately without sending keys."""
-        from cli_agent_orchestrator.providers.claude_code import IDLE_PROMPT_PATTERN
 
         mock_tmux.get_history.return_value = "❯ "
 
@@ -84,9 +80,7 @@ class TestHandleStartupPromptsBranches:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_trust_prompt_detected(self, mock_tmux, provider):
         """Trust prompt sends Enter to accept."""
-        mock_tmux.get_history.return_value = (
-            "Do you trust the files in this folder?\n" "❯ Yes, I trust this folder"
-        )
+        mock_tmux.get_history.return_value = "Do you trust the files in this folder?\n❯ Yes, I trust this folder"
         mock_pane = MagicMock()
         mock_window = MagicMock()
         mock_window.active_pane = mock_pane

@@ -28,8 +28,6 @@ Non-permission cases (N1-N9):
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.kiro_cli import KiroCliProvider
 
@@ -37,7 +35,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 def load_fixture(filename: str) -> str:
-    with open(FIXTURES_DIR / filename, "r") as f:
+    with open(FIXTURES_DIR / filename) as f:
         return f.read()
 
 
@@ -58,18 +56,14 @@ class TestPermissionPromptActive:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_p2_active_trailing_text(self, mock_tmux):
         """P2: Permission prompt + idle prompt with trailing text, unanswered."""
-        mock_tmux.get_history.return_value = load_fixture(
-            "kiro_cli_permission_active_trailing_text.txt"
-        )
+        mock_tmux.get_history.return_value = load_fixture("kiro_cli_permission_active_trailing_text.txt")
         provider = make_provider("cao-jira-expert")
         assert provider.get_status() == TerminalStatus.WAITING_USER_ANSWER
 
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_p3_active_injection_delivered(self, mock_tmux):
         """P3: Permission prompt + CAO injection message delivered during prompt."""
-        mock_tmux.get_history.return_value = load_fixture(
-            "kiro_cli_permission_active_injection.txt"
-        )
+        mock_tmux.get_history.return_value = load_fixture("kiro_cli_permission_active_injection.txt")
         provider = make_provider("cao-code-explorer-expert")
         assert provider.get_status() == TerminalStatus.WAITING_USER_ANSWER
 
@@ -87,9 +81,7 @@ class TestPermissionPromptActive:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_p8_active_partial_typing(self, mock_tmux):
         """P8: User typing partial text during permission prompt, no enter."""
-        mock_tmux.get_history.return_value = load_fixture(
-            "kiro_cli_permission_active_partial_typing.txt"
-        )
+        mock_tmux.get_history.return_value = load_fixture("kiro_cli_permission_active_partial_typing.txt")
         provider = make_provider("cao-internal-docs-expert")
         assert provider.get_status() == TerminalStatus.WAITING_USER_ANSWER
 
@@ -97,8 +89,7 @@ class TestPermissionPromptActive:
     def test_p1_active_zero_idle_prompts_after(self, mock_tmux):
         """Permission prompt with no idle prompt after it at all."""
         mock_tmux.get_history.return_value = (
-            "Allow this action? Use 't' to trust (always allow) this tool "
-            "for the session. [y/n/t]:\n"
+            "Allow this action? Use 't' to trust (always allow) this tool for the session. [y/n/t]:\n"
         )
         # No idle prompt → PROCESSING (no idle prompt detected at all)
         provider = make_provider("developer")
@@ -119,9 +110,7 @@ class TestPermissionPromptStale:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_p6_long_response_instead_of_ynt(self, mock_tmux):
         """P6: User typed long response instead of y/n/t, agent continued."""
-        mock_tmux.get_history.return_value = load_fixture(
-            "kiro_cli_permission_stale_long_response.txt"
-        )
+        mock_tmux.get_history.return_value = load_fixture("kiro_cli_permission_stale_long_response.txt")
         provider = make_provider("cao-query-decomposer-supervisor")
         status = provider.get_status()
         assert status != TerminalStatus.WAITING_USER_ANSWER
@@ -186,9 +175,7 @@ class TestNonPermissionCases:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_n4_running_tool(self, mock_tmux):
         """N4: Tool is executing, no idle prompt."""
-        mock_tmux.get_history.return_value = (
-            "Searching for: system-privileges (*.toml) (using tool: grep)"
-        )
+        mock_tmux.get_history.return_value = "Searching for: system-privileges (*.toml) (using tool: grep)"
         provider = make_provider("developer")
         assert provider.get_status() == TerminalStatus.PROCESSING
 
@@ -196,9 +183,7 @@ class TestNonPermissionCases:
     def test_n6_completed_response(self, mock_tmux):
         """N6: Agent completed response, prompt shown after green arrow."""
         mock_tmux.get_history.return_value = (
-            "[developer] 20% λ > user question\n"
-            "> Complete response here\n"
-            "[developer] 22% λ > "
+            "[developer] 20% λ > user question\n> Complete response here\n[developer] 22% λ > "
         )
         provider = make_provider("developer")
         assert provider.get_status() == TerminalStatus.COMPLETED
@@ -206,9 +191,7 @@ class TestNonPermissionCases:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_n9_message_received(self, mock_tmux):
         """N9: Inbox message delivered, agent idle."""
-        mock_tmux.get_history.return_value = (
-            "[developer] 12% > [Message from terminal 9445aa60] " "Hello from supervisor"
-        )
+        mock_tmux.get_history.return_value = "[developer] 12% > [Message from terminal 9445aa60] Hello from supervisor"
         provider = make_provider("developer")
         assert provider.get_status() == TerminalStatus.IDLE
 
@@ -260,7 +243,7 @@ class TestPermissionPromptEdgeCases:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_no_permission_prompt_in_output(self, mock_tmux):
         """No permission prompt at all — should not affect idle detection."""
-        mock_tmux.get_history.return_value = "> Here is my response\n\n" "[developer] 22% λ > "
+        mock_tmux.get_history.return_value = "> Here is my response\n\n[developer] 22% λ > "
         provider = make_provider("developer")
         assert provider.get_status() == TerminalStatus.COMPLETED
 

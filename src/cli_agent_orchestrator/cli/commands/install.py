@@ -8,23 +8,22 @@ import click
 import frontmatter
 import requests  # type: ignore[import-untyped]
 
-from cli_agent_orchestrator.constants import (
-    AGENT_CONTEXT_DIR,
-    CAO_ENV_FILE,
-    COPILOT_AGENTS_DIR,
-    DEFAULT_PROVIDER,
-    KIRO_AGENTS_DIR,
-    LOCAL_AGENT_STORE_DIR,
-    PROVIDERS,
-    Q_AGENTS_DIR,
-    SKILLS_DIR,
-)
+from cli_agent_orchestrator.constants import AGENT_CONTEXT_DIR
+from cli_agent_orchestrator.constants import CAO_ENV_FILE
+from cli_agent_orchestrator.constants import COPILOT_AGENTS_DIR
+from cli_agent_orchestrator.constants import DEFAULT_PROVIDER
+from cli_agent_orchestrator.constants import KIRO_AGENTS_DIR
+from cli_agent_orchestrator.constants import LOCAL_AGENT_STORE_DIR
+from cli_agent_orchestrator.constants import PROVIDERS
+from cli_agent_orchestrator.constants import Q_AGENTS_DIR
+from cli_agent_orchestrator.constants import SKILLS_DIR
 from cli_agent_orchestrator.models.copilot_agent import CopilotAgentConfig
 from cli_agent_orchestrator.models.kiro_agent import KiroAgentConfig
 from cli_agent_orchestrator.models.provider import ProviderType
 from cli_agent_orchestrator.models.q_agent import QAgentConfig
 from cli_agent_orchestrator.utils.agent_profiles import parse_agent_profile_text
-from cli_agent_orchestrator.utils.env import resolve_env_vars, set_env_var
+from cli_agent_orchestrator.utils.env import resolve_env_vars
+from cli_agent_orchestrator.utils.env import set_env_var
 from cli_agent_orchestrator.utils.skill_injection import compose_agent_prompt
 
 
@@ -67,15 +66,11 @@ def _download_agent(source: str) -> str:
 def _parse_env_assignment(env_assignment: str) -> tuple[str, str]:
     """Parse a ``KEY=VALUE`` env assignment for install-time injection."""
     if "=" not in env_assignment:
-        raise click.BadParameter(
-            f"Invalid env var '{env_assignment}'. Expected format KEY=VALUE.", param_hint="--env"
-        )
+        raise click.BadParameter(f"Invalid env var '{env_assignment}'. Expected format KEY=VALUE.", param_hint="--env")
 
     key, value = env_assignment.split("=", 1)
     if not key:
-        raise click.BadParameter(
-            f"Invalid env var '{env_assignment}'. Key must not be empty.", param_hint="--env"
-        )
+        raise click.BadParameter(f"Invalid env var '{env_assignment}'. Key must not be empty.", param_hint="--env")
     return key, value
 
 
@@ -122,11 +117,11 @@ def install(agent_source: str, provider: str, env_vars: tuple[str, ...]):
         if agent_source.startswith("http://") or agent_source.startswith("https://"):
             # Download from URL
             agent_name = _download_agent(agent_source)
-            click.echo(f"✓ Downloaded agent from URL to local store")
+            click.echo("✓ Downloaded agent from URL to local store")
         elif Path(agent_source).exists():
             # Copy from file path
             agent_name = _download_agent(agent_source)
-            click.echo(f"✓ Copied agent from file to local store")
+            click.echo("✓ Copied agent from file to local store")
         else:
             # Treat as agent name
             agent_name = agent_source
@@ -153,8 +148,7 @@ def install(agent_source: str, provider: str, env_vars: tuple[str, ...]):
         if unresolved:
             names = ", ".join(sorted(unresolved))
             click.echo(
-                f"⚠ Unresolved env var(s) in profile: {names}. "
-                f"Set them with `cao env set` or pass --env KEY=VALUE.",
+                f"⚠ Unresolved env var(s) in profile: {names}. Set them with `cao env set` or pass --env KEY=VALUE.",
                 err=True,
             )
 
@@ -188,9 +182,7 @@ def install(agent_source: str, provider: str, env_vars: tuple[str, ...]):
             )
             safe_filename = profile.name.replace("/", "__")
             agent_file = Q_AGENTS_DIR / f"{safe_filename}.json"
-            agent_file.write_text(
-                agent_config.model_dump_json(indent=2, exclude_none=True), encoding="utf-8"
-            )
+            agent_file.write_text(agent_config.model_dump_json(indent=2, exclude_none=True), encoding="utf-8")
 
         elif provider == ProviderType.KIRO_CLI.value:
             KIRO_AGENTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -200,9 +192,7 @@ def install(agent_source: str, provider: str, env_vars: tuple[str, ...]):
                 f"file://{dest_file.absolute()}",
                 f"skill://{SKILLS_DIR}/**/SKILL.md",
             ]
-            raw_prompt = (
-                profile.prompt.strip() if profile.prompt and profile.prompt.strip() else None
-            )
+            raw_prompt = profile.prompt.strip() if profile.prompt and profile.prompt.strip() else None
             agent_config = KiroAgentConfig(
                 name=profile.name,
                 description=profile.description,
@@ -218,9 +208,7 @@ def install(agent_source: str, provider: str, env_vars: tuple[str, ...]):
             )
             safe_filename = profile.name.replace("/", "__")
             agent_file = KIRO_AGENTS_DIR / f"{safe_filename}.json"
-            agent_file.write_text(
-                agent_config.model_dump_json(indent=2, exclude_none=True), encoding="utf-8"
-            )
+            agent_file.write_text(agent_config.model_dump_json(indent=2, exclude_none=True), encoding="utf-8")
 
         elif provider == ProviderType.COPILOT_CLI.value:
             COPILOT_AGENTS_DIR.mkdir(parents=True, exist_ok=True)

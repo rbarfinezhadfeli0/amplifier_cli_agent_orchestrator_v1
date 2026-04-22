@@ -1,8 +1,9 @@
 """Q CLI agent configuration model."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic import Field
 
 
 class QAgentConfig(BaseModel):
@@ -10,18 +11,18 @@ class QAgentConfig(BaseModel):
 
     name: str
     description: str
-    tools: List[str] = Field(default_factory=lambda: ["*"])
-    allowedTools: List[str] = Field(default_factory=list)
+    tools: list[str] = Field(default_factory=lambda: ["*"])
+    allowedTools: list[str] = Field(default_factory=list)
     useLegacyMcpJson: bool = False
-    resources: List[str] = Field(default_factory=list)
+    resources: list[str] = Field(default_factory=list)
 
     # Optional pass-through fields
-    prompt: Optional[str] = None
-    mcpServers: Optional[Dict[str, Any]] = None
-    toolAliases: Optional[Dict[str, str]] = None
-    toolsSettings: Optional[Dict[str, Any]] = None
-    hooks: Optional[Dict[str, Any]] = None
-    model: Optional[str] = None
+    prompt: str | None = None
+    mcpServers: dict[str, Any] | None = None
+    toolAliases: dict[str, str] | None = None
+    toolsSettings: dict[str, Any] | None = None
+    hooks: dict[str, Any] | None = None
+    model: str | None = None
 
     class Config:
         # Exclude None values when serializing to JSON

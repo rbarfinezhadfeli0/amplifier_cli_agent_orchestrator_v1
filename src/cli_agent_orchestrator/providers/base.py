@@ -20,8 +20,8 @@ Each provider must implement pattern matching for its specific CLI's prompt
 and output format to reliably detect status changes.
 """
 
-from abc import ABC, abstractmethod
-from typing import List, Optional
+from abc import ABC
+from abc import abstractmethod
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 
@@ -46,8 +46,8 @@ class BaseProvider(ABC):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        allowed_tools: Optional[List[str]] = None,
-        skill_prompt: Optional[str] = None,
+        allowed_tools: list[str] | None = None,
+        skill_prompt: str | None = None,
     ):
         """Initialize provider with terminal context.
 
@@ -63,8 +63,8 @@ class BaseProvider(ABC):
         self.session_name = session_name
         self.window_name = window_name
         self._status = TerminalStatus.IDLE
-        self._allowed_tools: Optional[List[str]] = allowed_tools
-        self._skill_prompt: Optional[str] = skill_prompt
+        self._allowed_tools: list[str] | None = allowed_tools
+        self._skill_prompt: str | None = skill_prompt
 
     @property
     def status(self) -> TerminalStatus:
@@ -94,7 +94,7 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get current provider status by analyzing terminal output.
 
         Args:

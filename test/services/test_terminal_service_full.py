@@ -1,21 +1,20 @@
 """Full tests for terminal service."""
 
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.agent_profile import AgentProfile
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.services.terminal_service import (
-    OutputMode,
-    create_terminal,
-    delete_terminal,
-    get_output,
-    get_terminal,
-    get_working_directory,
-    send_input,
-)
+from cli_agent_orchestrator.services.terminal_service import OutputMode
+from cli_agent_orchestrator.services.terminal_service import create_terminal
+from cli_agent_orchestrator.services.terminal_service import delete_terminal
+from cli_agent_orchestrator.services.terminal_service import get_output
+from cli_agent_orchestrator.services.terminal_service import get_terminal
+from cli_agent_orchestrator.services.terminal_service import get_working_directory
+from cli_agent_orchestrator.services.terminal_service import send_input
 
 
 class TestCreateTerminal:
@@ -413,9 +412,7 @@ class TestSendInput:
         result = send_input("test1234", "test message")
 
         assert result is True
-        mock_tmux.send_keys.assert_called_once_with(
-            "cao-session", "developer-abcd", "test message", enter_count=2
-        )
+        mock_tmux.send_keys.assert_called_once_with("cao-session", "developer-abcd", "test message", enter_count=2)
         mock_update.assert_called_once_with("test1234")
 
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
@@ -493,9 +490,7 @@ class TestDeleteTerminal:
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_delete_terminal_success(
-        self, mock_get_metadata, mock_tmux, mock_provider_manager, mock_db_delete
-    ):
+    def test_delete_terminal_success(self, mock_get_metadata, mock_tmux, mock_provider_manager, mock_db_delete):
         """Test deleting terminal successfully."""
         mock_get_metadata.return_value = {
             "tmux_session": "cao-session",
@@ -513,9 +508,7 @@ class TestDeleteTerminal:
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_delete_terminal_pipe_pane_error(
-        self, mock_get_metadata, mock_tmux, mock_provider_manager, mock_db_delete
-    ):
+    def test_delete_terminal_pipe_pane_error(self, mock_get_metadata, mock_tmux, mock_provider_manager, mock_db_delete):
         """Test deleting terminal when stop_pipe_pane fails."""
         mock_get_metadata.return_value = {
             "tmux_session": "cao-session",
@@ -532,9 +525,7 @@ class TestDeleteTerminal:
     @patch("cli_agent_orchestrator.services.terminal_service.db_delete_terminal")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_delete_terminal_no_metadata(
-        self, mock_get_metadata, mock_provider_manager, mock_db_delete
-    ):
+    def test_delete_terminal_no_metadata(self, mock_get_metadata, mock_provider_manager, mock_db_delete):
         """Test deleting terminal when metadata not found."""
         mock_get_metadata.return_value = None
         mock_db_delete.return_value = True

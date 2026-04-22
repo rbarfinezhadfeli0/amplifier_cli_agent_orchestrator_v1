@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import List, Tuple
 
 import frontmatter
 from pydantic import ValidationError
@@ -29,13 +28,11 @@ def validate_skill_name(skill_name: str) -> str:
     if not normalized_name:
         raise SkillNameError("Skill name must not be empty")
     if "/" in normalized_name or "\\" in normalized_name or ".." in normalized_name:
-        raise SkillNameError(
-            f"Invalid skill name '{skill_name}': must not contain '/', '\\', or '..'"
-        )
+        raise SkillNameError(f"Invalid skill name '{skill_name}': must not contain '/', '\\', or '..'")
     return normalized_name
 
 
-def _parse_skill_file(skill_file: Path) -> Tuple[SkillMetadata, str]:
+def _parse_skill_file(skill_file: Path) -> tuple[SkillMetadata, str]:
     """Parse a skill file and return validated metadata plus Markdown content."""
     try:
         parsed_skill = frontmatter.loads(skill_file.read_text())
@@ -50,7 +47,7 @@ def _parse_skill_file(skill_file: Path) -> Tuple[SkillMetadata, str]:
     return metadata, parsed_skill.content.strip()
 
 
-def _load_skill_folder(skill_path: Path) -> Tuple[SkillMetadata, str]:
+def _load_skill_folder(skill_path: Path) -> tuple[SkillMetadata, str]:
     """Load and validate a skill folder from the filesystem."""
     if not skill_path.exists():
         raise FileNotFoundError(f"Skill folder does not exist: {skill_path}")
@@ -63,9 +60,7 @@ def _load_skill_folder(skill_path: Path) -> Tuple[SkillMetadata, str]:
 
     metadata, content = _parse_skill_file(skill_file)
     if skill_path.name != metadata.name:
-        raise ValueError(
-            f"Skill folder name '{skill_path.name}' does not match skill name '{metadata.name}'"
-        )
+        raise ValueError(f"Skill folder name '{skill_path.name}' does not match skill name '{metadata.name}'")
 
     return metadata, content
 
@@ -86,12 +81,12 @@ def load_skill_content(name: str) -> str:
     return content
 
 
-def list_skills() -> List[SkillMetadata]:
+def list_skills() -> list[SkillMetadata]:
     """Return all valid skills from the local skill store sorted by name."""
     if not SKILLS_DIR.exists():
         return []
 
-    skills: List[SkillMetadata] = []
+    skills: list[SkillMetadata] = []
     for item in SKILLS_DIR.iterdir():
         if not item.is_dir():
             continue

@@ -12,7 +12,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 from libtmux.exc import LibTmuxException
 
@@ -49,15 +48,15 @@ class CopilotCliProvider(BaseProvider):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[list] = None,
-        model: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list | None = None,
+        model: str | None = None,
     ):
         super().__init__(terminal_id, session_name, window_name, allowed_tools)
         self._initialized = False
         self._agent_profile = agent_profile
         self._model = model
-        self._copilot_help_text_cache: Optional[str] = None
+        self._copilot_help_text_cache: str | None = None
 
     @property
     def paste_enter_count(self) -> int:
@@ -70,11 +69,9 @@ class CopilotCliProvider(BaseProvider):
         cleaned = re.sub(ANSI_CODE_PATTERN, "", cleaned)
         return re.sub(CONTROL_CHARS_PATTERN, "", cleaned)
 
-    def _history(self, tail_lines: Optional[int] = None) -> str:
+    def _history(self, tail_lines: int | None = None) -> str:
         try:
-            raw = tmux_client.get_history(
-                self.session_name, self.window_name, tail_lines=tail_lines
-            )
+            raw = tmux_client.get_history(self.session_name, self.window_name, tail_lines=tail_lines)
         except (
             ValueError,
             RuntimeError,
@@ -83,9 +80,7 @@ class CopilotCliProvider(BaseProvider):
             LibTmuxException,
             subprocess.SubprocessError,
         ) as exc:
-            logger.warning(
-                "history read failed for %s:%s: %s", self.session_name, self.window_name, exc
-            )
+            logger.warning("history read failed for %s:%s: %s", self.session_name, self.window_name, exc)
             return ""
         return self._clean(raw)
 
@@ -106,7 +101,7 @@ class CopilotCliProvider(BaseProvider):
     def _wait_for_shell_ready(self, timeout: float = 30.0, polling_interval: float = 0.5) -> bool:
         """Wait for a stable non-empty shell screen using provider-safe history reads."""
         start_time = time.time()
-        previous_output: Optional[str] = None
+        previous_output: str | None = None
         stable_reads = 0
 
         while time.time() - start_time < timeout:
@@ -256,9 +251,7 @@ class CopilotCliProvider(BaseProvider):
 
     def initialize(self) -> bool:
         try:
-            shell_ready = wait_for_shell(
-                tmux_client, self.session_name, self.window_name, timeout=30.0
-            )
+            shell_ready = wait_for_shell(tmux_client, self.session_name, self.window_name, timeout=30.0)
         except Exception as exc:
             logger.warning(
                 "wait_for_shell failed for %s:%s, retrying with provider history: %s",
@@ -365,16 +358,10 @@ class CopilotCliProvider(BaseProvider):
         normalized = [
             line
             for line in lines
-            if line.strip()
-            and not cls._is_footer_line(line)
-            and not re.match(IDLE_PROMPT_LINE_PATTERN, line)
+            if line.strip() and not cls._is_footer_line(line) and not re.match(IDLE_PROMPT_LINE_PATTERN, line)
         ]
 
-        while (
-            normalized
-            and normalized[0].startswith("  ")
-            and not cls._is_processing_line(normalized[0])
-        ):
+        while normalized and normalized[0].startswith("  ") and not cls._is_processing_line(normalized[0]):
             normalized.pop(0)
 
         return normalized
@@ -396,7 +383,7 @@ class CopilotCliProvider(BaseProvider):
             break
         return trimmed
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         effective_tail_lines = tail_lines if tail_lines is not None else 220
         output = self._history(tail_lines=effective_tail_lines)
         if not output.strip():
@@ -407,9 +394,7 @@ class CopilotCliProvider(BaseProvider):
         tail_output = "\n".join(lines[-40:])
 
         waiting_matches = list(re.finditer(WAITING_PROMPT_PATTERN, tail_output, re.IGNORECASE))
-        idle_matches = list(
-            re.finditer(IDLE_PROMPT_LINE_PATTERN, tail_output, re.IGNORECASE | re.MULTILINE)
-        )
+        idle_matches = list(re.finditer(IDLE_PROMPT_LINE_PATTERN, tail_output, re.IGNORECASE | re.MULTILINE))
         waiting_now = bool(waiting_matches)
         if waiting_matches and idle_matches:
             waiting_now = waiting_matches[-1].start() > idle_matches[-1].start()
@@ -428,9 +413,7 @@ class CopilotCliProvider(BaseProvider):
         if last_user < 0:
             return TerminalStatus.IDLE
 
-        post_lines = self._trim_tail_prompts(
-            self._normalize_post_user_lines(lines[last_user + 1 :])
-        )
+        post_lines = self._trim_tail_prompts(self._normalize_post_user_lines(lines[last_user + 1 :]))
         if not post_lines:
             return TerminalStatus.IDLE
 
@@ -457,18 +440,14 @@ class CopilotCliProvider(BaseProvider):
         last_user = self._find_last_user_line(lines)
 
         if last_user >= 0:
-            post_lines = self._trim_tail_prompts(
-                self._normalize_post_user_lines(lines[last_user + 1 :])
-            )
+            post_lines = self._trim_tail_prompts(self._normalize_post_user_lines(lines[last_user + 1 :]))
             while post_lines and self._is_processing_line(post_lines[-1]):
                 post_lines.pop()
             message = "\n".join(post_lines).strip()
             if message:
                 return message
 
-        matches = list(
-            re.finditer(ASSISTANT_PREFIX_PATTERN, clean_output, re.IGNORECASE | re.MULTILINE)
-        )
+        matches = list(re.finditer(ASSISTANT_PREFIX_PATTERN, clean_output, re.IGNORECASE | re.MULTILINE))
         if matches:
             start_pos = matches[-1].end()
             tail = clean_output[start_pos:].strip()

@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cli_agent_orchestrator.constants import CAO_HOME_DIR
 
@@ -21,7 +21,7 @@ _DEFAULTS = {
 }
 
 
-def _load() -> Dict[str, Any]:
+def _load() -> dict[str, Any]:
     """Load settings from disk."""
     if SETTINGS_FILE.exists():
         try:
@@ -31,13 +31,13 @@ def _load() -> Dict[str, Any]:
     return {}
 
 
-def _save(data: Dict[str, Any]) -> None:
+def _save(data: dict[str, Any]) -> None:
     """Save settings to disk."""
     CAO_HOME_DIR.mkdir(parents=True, exist_ok=True)
     SETTINGS_FILE.write_text(json.dumps(data, indent=2))
 
 
-def get_agent_dirs() -> Dict[str, str]:
+def get_agent_dirs() -> dict[str, str]:
     """Get configured agent directories per provider.
 
     Returns dict like:
@@ -51,7 +51,7 @@ def get_agent_dirs() -> Dict[str, str]:
     return result
 
 
-def set_agent_dirs(dirs: Dict[str, str]) -> Dict[str, str]:
+def set_agent_dirs(dirs: dict[str, str]) -> dict[str, str]:
     """Update agent directories. Only updates providers that are specified."""
     settings = _load()
     current = settings.get("agent_dirs", {})
@@ -64,13 +64,13 @@ def set_agent_dirs(dirs: Dict[str, str]) -> Dict[str, str]:
     return get_agent_dirs()
 
 
-def get_extra_agent_dirs() -> List[str]:
+def get_extra_agent_dirs() -> list[str]:
     """Get extra agent scan directories (user-added custom paths)."""
     settings = _load()
     return settings.get("extra_agent_dirs", [])
 
 
-def set_extra_agent_dirs(dirs: List[str]) -> List[str]:
+def set_extra_agent_dirs(dirs: list[str]) -> list[str]:
     """Set extra agent scan directories."""
     settings = _load()
     settings["extra_agent_dirs"] = [d for d in dirs if d.strip()]

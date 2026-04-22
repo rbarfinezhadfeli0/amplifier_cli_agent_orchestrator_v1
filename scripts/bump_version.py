@@ -20,7 +20,7 @@ def bump(part: str, version: str) -> str:
     major, minor, patch = map(int, version.split("."))
     if part == "major":
         return f"{major + 1}.0.0"
-    elif part == "minor":
+    if part == "minor":
         return f"{major}.{minor + 1}.0"
     return f"{major}.{minor}.{patch + 1}"
 
@@ -52,11 +52,11 @@ def main() -> None:
     generate_changelog(new)
 
     print(f"Bumped {old} -> {new}")
-    print(f"\nNext steps:")
-    print(f"  1. git add pyproject.toml CHANGELOG.md")
+    print("\nNext steps:")
+    print("  1. git add pyproject.toml CHANGELOG.md")
     print(f"  2. git commit -m 'chore: release v{new}'")
     print(f"  3. git tag v{new}")
-    print(f"  4. git push && git push --tags")
+    print("  4. git push && git push --tags")
 
 
 if __name__ == "__main__":

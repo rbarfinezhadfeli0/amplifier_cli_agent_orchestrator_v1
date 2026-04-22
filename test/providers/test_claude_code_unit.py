@@ -1,13 +1,15 @@
 """Unit tests for Claude Code provider."""
 
 import json
-from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock
+from unittest.mock import mock_open
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.providers.claude_code import ClaudeCodeProvider, ProviderError
+from cli_agent_orchestrator.providers.claude_code import ClaudeCodeProvider
+from cli_agent_orchestrator.providers.claude_code import ProviderError
 
 # All initialization tests need to patch _ensure_skip_bypass_prompt_setting
 # to avoid writing to the real ~/.claude/settings.json.
@@ -78,9 +80,7 @@ class TestClaudeCodeProviderInitialization:
     @patch("cli_agent_orchestrator.providers.claude_code.wait_for_shell")
     @patch("cli_agent_orchestrator.providers.claude_code.wait_until_status")
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
-    def test_initialize_with_agent_profile(
-        self, mock_tmux, mock_wait_status, mock_wait_shell, mock_load, _
-    ):
+    def test_initialize_with_agent_profile(self, mock_tmux, mock_wait_status, mock_wait_shell, mock_load, _):
         """Test initialization with agent profile."""
         mock_wait_shell.return_value = True
         mock_wait_status.return_value = True
@@ -121,9 +121,7 @@ class TestClaudeCodeProviderInitialization:
     @patch("cli_agent_orchestrator.providers.claude_code.wait_for_shell")
     @patch("cli_agent_orchestrator.providers.claude_code.wait_until_status")
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
-    def test_initialize_with_mcp_servers(
-        self, mock_tmux, mock_wait_status, mock_wait_shell, mock_load, _
-    ):
+    def test_initialize_with_mcp_servers(self, mock_tmux, mock_wait_status, mock_wait_shell, mock_load, _):
         """Test initialization with MCP servers in profile."""
         mock_wait_shell.return_value = True
         mock_wait_status.return_value = True
@@ -249,10 +247,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_processing_beats_stale_completed(self, mock_tmux):
         """Test that PROCESSING is detected even when stale ⏺ and ❯ markers are in scrollback."""
         mock_tmux.get_history.return_value = (
-            "⏺ Previous response from init\n"
-            "❯ user task message\n"
-            "⏺ Let me read the file\n"
-            "✻ Orbiting…"
+            "⏺ Previous response from init\n❯ user task message\n⏺ Let me read the file\n✻ Orbiting…"
         )
 
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
@@ -264,11 +259,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_completed_despite_stale_spinner_in_scrollback(self, mock_tmux):
         """Stale spinner in scrollback must not block COMPLETED detection (#104)."""
         mock_tmux.get_history.return_value = (
-            "✻ Orbiting…\n"
-            "⏺ Previous response\n"
-            "❯ user sent new task\n"
-            "⏺ Completed response\n"
-            "❯ "
+            "✻ Orbiting…\n⏺ Previous response\n❯ user sent new task\n⏺ Completed response\n❯ "
         )
 
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
@@ -277,9 +268,7 @@ class TestClaudeCodeProviderStatusDetection:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_get_status_idle_despite_stale_spinner_in_scrollback(self, mock_tmux):
         """Stale spinner in scrollback must not block IDLE detection (#104)."""
-        mock_tmux.get_history.return_value = (
-            "✶ Processing… (esc to interrupt)\n" "Some previous output\n" "❯ "
-        )
+        mock_tmux.get_history.return_value = "✶ Processing… (esc to interrupt)\nSome previous output\n❯ "
 
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.IDLE
@@ -288,12 +277,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_processing_spinner_before_separator(self, mock_tmux):
         """Spinner immediately before ──────── separator → PROCESSING (structural check)."""
         mock_tmux.get_history.return_value = (
-            "❯ do the task\n"
-            "⏺ Let me read the file\n"
-            "✢ Thinking…\n"
-            "\n"
-            "────────────────────────\n"
-            "❯ "
+            "❯ do the task\n⏺ Let me read the file\n✢ Thinking…\n\n────────────────────────\n❯ "
         )
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.PROCESSING
@@ -302,7 +286,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_completed_no_spinner_before_separator(self, mock_tmux):
         """Response text (no spinner) before separator → COMPLETED, not PROCESSING."""
         mock_tmux.get_history.return_value = (
-            "❯ do the task\n" "⏺ Here is the completed response\n" "────────────────────────\n" "❯ "
+            "❯ do the task\n⏺ Here is the completed response\n────────────────────────\n❯ "
         )
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.COMPLETED
@@ -336,12 +320,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_processing_ansi_separator(self, mock_tmux):
         """Spinner before separator with ANSI colour codes on separator → PROCESSING."""
         mock_tmux.get_history.return_value = (
-            "❯ do the task\n"
-            "⏺ Reading file…\n"
-            "✽ Cooking…\n"
-            "\n"
-            "\x1b[38;5;244m────────────────────────\x1b[0m\n"
-            "❯ "
+            "❯ do the task\n⏺ Reading file…\n✽ Cooking…\n\n\x1b[38;5;244m────────────────────────\x1b[0m\n❯ "
         )
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.PROCESSING
@@ -349,9 +328,7 @@ class TestClaudeCodeProviderStatusDetection:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_get_status_processing_middle_dot_spinner(self, mock_tmux):
         """New · Swirling… spinner variant → PROCESSING via structural check."""
-        mock_tmux.get_history.return_value = (
-            "❯ do the task\n" "· Swirling…\n" "\n" "────────────────────────\n" "❯ "
-        )
+        mock_tmux.get_history.return_value = "❯ do the task\n· Swirling…\n\n────────────────────────\n❯ "
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.PROCESSING
 
@@ -359,11 +336,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_idle_not_false_processing_from_status_bar(self, mock_tmux):
         """Status bar '· latest:…' must not false-positive as PROCESSING."""
         mock_tmux.get_history.return_value = (
-            "Claude Code v2.1.63\n"
-            "────────────────────\n"
-            "❯ \n"
-            "────────────────────\n"
-            "  current: 2.1.63 · latest:…"
+            "Claude Code v2.1.63\n────────────────────\n❯ \n────────────────────\n  current: 2.1.63 · latest:…"
         )
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         assert provider.get_status() == TerminalStatus.IDLE
@@ -372,9 +345,7 @@ class TestClaudeCodeProviderStatusDetection:
     def test_get_status_waiting_user_answer(self, mock_tmux):
         """Test WAITING_USER_ANSWER status detection."""
         mock_tmux.get_history.return_value = (
-            "❯ 1. Option one\n"
-            "  2. Option two\n"
-            "Enter to select · ↑/↓ to navigate · Esc to cancel"
+            "❯ 1. Option one\n  2. Option two\nEnter to select · ↑/↓ to navigate · Esc to cancel"
         )
 
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
@@ -385,9 +356,7 @@ class TestClaudeCodeProviderStatusDetection:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_get_status_stale_scrollback_not_waiting_user_answer(self, mock_tmux):
         """Stale numbered scrollback without the active footer must not block input."""
-        mock_tmux.get_history.return_value = (
-            "❯ 1. Option one\n" "  2. Option two\n" "⏺ Selection handled earlier\n" "❯ "
-        )
+        mock_tmux.get_history.return_value = "❯ 1. Option one\n  2. Option two\n⏺ Selection handled earlier\n❯ "
 
         provider = ClaudeCodeProvider("test123", "test-session", "window-0")
         status = provider.get_status()
@@ -537,9 +506,7 @@ class TestClaudeCodeProviderMisc:
         mock_profile = MagicMock()
         mock_profile.model = None
         mock_profile.system_prompt = None
-        mock_profile.mcpServers = {
-            "cao-mcp-server": {"command": "cao-mcp-server", "args": ["--port", "8080"]}
-        }
+        mock_profile.mcpServers = {"cao-mcp-server": {"command": "cao-mcp-server", "args": ["--port", "8080"]}}
         mock_load.return_value = mock_profile
 
         provider = ClaudeCodeProvider("term-42", "test-session", "window-0", "test-agent")
@@ -648,9 +615,7 @@ class TestClaudeCodeProviderStartupPrompts:
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
     def test_handle_startup_prompts_detected_and_accepted(self, mock_tmux):
         """Test that trust prompt is detected and auto-accepted."""
-        mock_tmux.get_history.return_value = (
-            "\x1b[1m❯\x1b[0m 1. Yes, I trust this folder\n  2. No, don't trust\n"
-        )
+        mock_tmux.get_history.return_value = "\x1b[1m❯\x1b[0m 1. Yes, I trust this folder\n  2. No, don't trust\n"
         mock_session = MagicMock()
         mock_window = MagicMock()
         mock_pane = MagicMock()
@@ -711,8 +676,7 @@ class TestClaudeCodeProviderStartupPrompts:
         """Test that bypass permissions prompt is detected and auto-accepted."""
         # First poll: bypass prompt; second poll: welcome banner (after dismissal)
         mock_tmux.get_history.side_effect = [
-            "WARNING: Claude Code running in Bypass Permissions mode\n"
-            "❯ 1. No, exit\n  2. Yes, I accept\n",
+            "WARNING: Claude Code running in Bypass Permissions mode\n❯ 1. No, exit\n  2. Yes, I accept\n",
             "Welcome to Claude Code v2.1.74",
         ]
 
@@ -800,9 +764,7 @@ class TestClaudeCodeProviderStartupPrompts:
     @patch("cli_agent_orchestrator.providers.claude_code.wait_for_shell")
     @patch("cli_agent_orchestrator.providers.claude_code.wait_until_status")
     @patch("cli_agent_orchestrator.providers.claude_code.tmux_client")
-    def test_initialize_calls_handle_startup_prompts(
-        self, mock_tmux, mock_wait_status, mock_wait_shell, _
-    ):
+    def test_initialize_calls_handle_startup_prompts(self, mock_tmux, mock_wait_status, mock_wait_shell, _):
         """Test that initialize calls _handle_startup_prompts."""
         mock_wait_shell.return_value = True
         mock_wait_status.return_value = True
@@ -831,9 +793,7 @@ class TestClaudeCodeProviderSettings:
         """Test no-op when setting is already present."""
         mock_settings_path = MagicMock()
         mock_settings_path.exists.return_value = True
-        mock_path_cls.home.return_value.__truediv__ = MagicMock(
-            side_effect=lambda _: mock_settings_path
-        )
+        mock_path_cls.home.return_value.__truediv__ = MagicMock(side_effect=lambda _: mock_settings_path)
         # Chain .home() / ".claude" / "settings.json"
         mock_home = MagicMock()
         mock_claude_dir = MagicMock()
@@ -857,9 +817,7 @@ class TestClaudeCodeProviderSettings:
         with patch("cli_agent_orchestrator.providers.claude_code.Path") as mock_path_cls:
             mock_home = MagicMock()
             mock_path_cls.home.return_value = mock_home
-            mock_home.__truediv__ = MagicMock(
-                return_value=MagicMock(__truediv__=MagicMock(return_value=settings_file))
-            )
+            mock_home.__truediv__ = MagicMock(return_value=MagicMock(__truediv__=MagicMock(return_value=settings_file)))
 
             ClaudeCodeProvider._ensure_skip_bypass_prompt_setting()
 
@@ -875,9 +833,7 @@ class TestClaudeCodeProviderSettings:
         with patch("cli_agent_orchestrator.providers.claude_code.Path") as mock_path_cls:
             mock_home = MagicMock()
             mock_path_cls.home.return_value = mock_home
-            mock_home.__truediv__ = MagicMock(
-                return_value=MagicMock(__truediv__=MagicMock(return_value=settings_file))
-            )
+            mock_home.__truediv__ = MagicMock(return_value=MagicMock(__truediv__=MagicMock(return_value=settings_file)))
 
             ClaudeCodeProvider._ensure_skip_bypass_prompt_setting()
 

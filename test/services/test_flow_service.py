@@ -4,23 +4,22 @@ import json
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.flow import Flow
-from cli_agent_orchestrator.services.flow_service import (
-    _get_next_run_time,
-    _parse_flow_file,
-    add_flow,
-    disable_flow,
-    enable_flow,
-    execute_flow,
-    get_flow,
-    get_flows_to_run,
-    list_flows,
-    remove_flow,
-)
+from cli_agent_orchestrator.services.flow_service import _get_next_run_time
+from cli_agent_orchestrator.services.flow_service import _parse_flow_file
+from cli_agent_orchestrator.services.flow_service import add_flow
+from cli_agent_orchestrator.services.flow_service import disable_flow
+from cli_agent_orchestrator.services.flow_service import enable_flow
+from cli_agent_orchestrator.services.flow_service import execute_flow
+from cli_agent_orchestrator.services.flow_service import get_flow
+from cli_agent_orchestrator.services.flow_service import get_flows_to_run
+from cli_agent_orchestrator.services.flow_service import list_flows
+from cli_agent_orchestrator.services.flow_service import remove_flow
 
 
 class TestGetNextRunTime:
@@ -472,9 +471,7 @@ Value is [[value]].
     @patch("cli_agent_orchestrator.services.flow_service.subprocess.run")
     @patch("cli_agent_orchestrator.services.flow_service.db_update_flow_run_times")
     @patch("cli_agent_orchestrator.services.flow_service.db_get_flow")
-    def test_execute_flow_with_script_execute_false(
-        self, mock_db_get, mock_update_times, mock_subprocess
-    ):
+    def test_execute_flow_with_script_execute_false(self, mock_db_get, mock_update_times, mock_subprocess):
         """Test executing a flow with script that returns execute=false."""
         with tempfile.TemporaryDirectory() as tmpdir:
             flow_path = Path(tmpdir) / "flow.md"
@@ -592,9 +589,7 @@ Prompt.
             )
             mock_db_get.return_value = mock_flow
 
-            mock_subprocess.return_value = MagicMock(
-                returncode=0, stdout="not valid json", stderr=""
-            )
+            mock_subprocess.return_value = MagicMock(returncode=0, stdout="not valid json", stderr="")
 
             with pytest.raises(ValueError, match="not valid JSON"):
                 execute_flow("bad-json-flow")

@@ -6,7 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.plugins import CaoPlugin, PluginRegistry, hook
+from cli_agent_orchestrator.plugins import CaoPlugin
+from cli_agent_orchestrator.plugins import PluginRegistry
+from cli_agent_orchestrator.plugins import hook
 from cli_agent_orchestrator.plugins.events import PostSendMessageEvent
 
 
@@ -63,12 +65,14 @@ class TestPluginRegistryLoad:
 
         registry = PluginRegistry()
 
-        with patch(
-            "importlib.metadata.entry_points",
-            return_value=[make_entry_point("single-hook", SingleHookPlugin)],
+        with (
+            patch(
+                "importlib.metadata.entry_points",
+                return_value=[make_entry_point("single-hook", SingleHookPlugin)],
+            ),
+            caplog.at_level(logging.INFO, logger="cli_agent_orchestrator.plugins.registry"),
         ):
-            with caplog.at_level(logging.INFO, logger="cli_agent_orchestrator.plugins.registry"):
-                await registry.load()
+            await registry.load()
 
         await registry.dispatch("post_send_message", PostSendMessageEvent(message="hello"))
 
@@ -162,15 +166,17 @@ class TestPluginRegistryLoad:
 
         registry = PluginRegistry()
 
-        with patch(
-            "importlib.metadata.entry_points",
-            return_value=[
-                make_entry_point("failing-setup", FailingSetupPlugin),
-                make_entry_point("healthy", HealthyPlugin),
-            ],
+        with (
+            patch(
+                "importlib.metadata.entry_points",
+                return_value=[
+                    make_entry_point("failing-setup", FailingSetupPlugin),
+                    make_entry_point("healthy", HealthyPlugin),
+                ],
+            ),
+            caplog.at_level(logging.WARNING, logger="cli_agent_orchestrator.plugins.registry"),
         ):
-            with caplog.at_level(logging.WARNING, logger="cli_agent_orchestrator.plugins.registry"):
-                await registry.load()
+            await registry.load()
 
         await registry.dispatch("post_send_message", PostSendMessageEvent(message="hello"))
 
@@ -180,9 +186,7 @@ class TestPluginRegistryLoad:
         assert caplog.records[-1].exc_info is not None
 
     @pytest.mark.asyncio
-    async def test_load_skips_non_plugin_entry_point_with_warning(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    async def test_load_skips_non_plugin_entry_point_with_warning(self, caplog: pytest.LogCaptureFixture) -> None:
         """A non-CaoPlugin entry point should be skipped and logged."""
 
         class NotAPlugin:
@@ -190,12 +194,14 @@ class TestPluginRegistryLoad:
 
         registry = PluginRegistry()
 
-        with patch(
-            "importlib.metadata.entry_points",
-            return_value=[make_entry_point("not-a-plugin", NotAPlugin)],
+        with (
+            patch(
+                "importlib.metadata.entry_points",
+                return_value=[make_entry_point("not-a-plugin", NotAPlugin)],
+            ),
+            caplog.at_level(logging.WARNING, logger="cli_agent_orchestrator.plugins.registry"),
         ):
-            with caplog.at_level(logging.WARNING, logger="cli_agent_orchestrator.plugins.registry"):
-                await registry.load()
+            await registry.load()
 
         assert registry._plugins == []
         assert registry._dispatch == {}
@@ -206,9 +212,7 @@ class TestPluginRegistryDispatch:
     """Tests for dispatch-time behavior and error isolation."""
 
     @pytest.mark.asyncio
-    async def test_dispatch_logs_warning_and_continues_when_hook_raises(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    async def test_dispatch_logs_warning_and_continues_when_hook_raises(self, caplog: pytest.LogCaptureFixture) -> None:
         """A failing hook should not prevent other matching hooks from running."""
 
         received: list[str] = []
@@ -239,9 +243,7 @@ class TestPluginRegistryDispatch:
         assert caplog.records[-1].exc_info is not None
 
     @pytest.mark.asyncio
-    async def test_dispatch_with_no_registered_handlers_is_no_op(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    async def test_dispatch_with_no_registered_handlers_is_no_op(self, caplog: pytest.LogCaptureFixture) -> None:
         """Dispatching an unhandled event should do nothing and not error."""
 
         registry = PluginRegistry()
@@ -257,9 +259,7 @@ class TestPluginRegistryTeardown:
     """Tests for plugin teardown behavior."""
 
     @pytest.mark.asyncio
-    async def test_teardown_logs_warning_and_continues_after_failure(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    async def test_teardown_logs_warning_and_continues_after_failure(self, caplog: pytest.LogCaptureFixture) -> None:
         """A teardown failure should not prevent later plugins from tearing down."""
 
         torn_down: list[str] = []

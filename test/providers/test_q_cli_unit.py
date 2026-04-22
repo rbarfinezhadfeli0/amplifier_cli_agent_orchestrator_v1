@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -15,7 +15,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def load_fixture(filename: str) -> str:
     """Load a fixture file and return its contents."""
-    with open(FIXTURES_DIR / filename, "r") as f:
+    with open(FIXTURES_DIR / filename) as f:
         return f.read()
 
 
@@ -35,9 +35,7 @@ class TestQCliProviderInitialization:
 
         assert result is True
         mock_wait_shell.assert_called_once()
-        mock_tmux.send_keys.assert_called_once_with(
-            "test-session", "window-0", "q chat --agent developer"
-        )
+        mock_tmux.send_keys.assert_called_once_with("test-session", "window-0", "q chat --agent developer")
         mock_wait_status.assert_called_once()
 
     @patch("cli_agent_orchestrator.providers.q_cli.wait_for_shell")
@@ -342,9 +340,7 @@ class TestQCliProviderMessageExtraction:
 
         provider = QCliProvider("test1234", "test-session", "window-0", "developer")
 
-        with pytest.raises(
-            ValueError, match="Incomplete Q CLI response - no final prompt detected after response"
-        ):
+        with pytest.raises(ValueError, match="Incomplete Q CLI response - no final prompt detected after response"):
             provider.extract_last_message_from_script(output)
 
     def test_extract_message_multiple_responses(self):
@@ -434,9 +430,7 @@ class TestQCliProviderRegexPatterns:
         # Should match with various trailing text
         assert re.search(provider._idle_prompt_pattern, "[developer]> How can I help?")
         assert re.search(provider._idle_prompt_pattern, "[developer] 16% λ > How can I help?")
-        assert re.search(
-            provider._idle_prompt_pattern, "[developer]> What would you like to do next?"
-        )
+        assert re.search(provider._idle_prompt_pattern, "[developer]> What would you like to do next?")
         assert re.search(provider._idle_prompt_pattern, "[developer] 5% > Ready for next task")
 
     def test_permission_prompt_pattern(self):
@@ -631,8 +625,7 @@ class TestQCliProviderEdgeCases:
     def test_output_with_unicode_characters(self, mock_tmux):
         """Test handling of unicode characters in output."""
         mock_tmux.get_history.return_value = (
-            "\x1b[38;5;10m> \x1b[39mResponse with unicode: 日本語 café naïve 🚀\n"
-            "\x1b[36m[developer]\x1b[35m>\x1b[39m"
+            "\x1b[38;5;10m> \x1b[39mResponse with unicode: 日本語 café naïve 🚀\n\x1b[36m[developer]\x1b[35m>\x1b[39m"
         )
 
         provider = QCliProvider("test1234", "test-session", "window-0", "developer")
@@ -650,8 +643,7 @@ class TestQCliProviderEdgeCases:
     def test_output_with_control_characters(self, mock_tmux):
         """Test handling of control characters."""
         mock_tmux.get_history.return_value = (
-            "\x1b[38;5;10m> \x1b[39mResponse\x07with\x1bcontrol\x00chars\n"
-            "\x1b[36m[developer]\x1b[35m>\x1b[39m"
+            "\x1b[38;5;10m> \x1b[39mResponse\x07with\x1bcontrol\x00chars\n\x1b[36m[developer]\x1b[35m>\x1b[39m"
         )
 
         provider = QCliProvider("test1234", "test-session", "window-0", "developer")

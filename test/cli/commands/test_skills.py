@@ -14,9 +14,7 @@ from cli_agent_orchestrator.utils.skill_injection import refresh_agent_json_prom
 def _create_skill(folder: Path, name: str, description: str, body: str = "# Skill\n\nBody") -> None:
     """Create a skill folder with SKILL.md and optional content."""
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "SKILL.md").write_text(
-        "---\n" f"name: {name}\n" f"description: {description}\n" "---\n\n" f"{body}\n"
-    )
+    (folder / "SKILL.md").write_text(f"---\nname: {name}\ndescription: {description}\n---\n\n{body}\n")
 
 
 class TestSkillsHelp:
@@ -95,22 +93,12 @@ class TestSkillsAddCommand:
 
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", context_dir
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", context_dir)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", q_dir)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", copilot_dir
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.services.settings_service.get_agent_dirs", lambda: {}
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", lambda: []
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", copilot_dir)
+        monkeypatch.setattr("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store)
+        monkeypatch.setattr("cli_agent_orchestrator.services.settings_service.get_agent_dirs", lambda: {})
+        monkeypatch.setattr("cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", lambda: [])
 
         (local_store / "developer.md").write_text(
             "---\nname: developer\ndescription: Developer\nprompt: Base prompt\n---\nBody\n",
@@ -203,19 +191,13 @@ class TestSkillsAddCommand:
         assert result.exit_code != 0
         assert "Invalid skill name" in result.output
 
-    def test_add_with_no_installed_agents_prints_no_refresh_message(
-        self, runner, tmp_path, monkeypatch
-    ):
+    def test_add_with_no_installed_agents_prints_no_refresh_message(self, runner, tmp_path, monkeypatch):
         """Adding a skill with zero installed CAO-managed agents should stay quiet."""
         skill_store = tmp_path / "skill-store"
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", tmp_path / "q"
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", tmp_path / "copilot"
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", tmp_path / "q")
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", tmp_path / "copilot")
 
         source_dir = tmp_path / "python-testing"
         _create_skill(source_dir, "python-testing", "Pytest conventions")
@@ -254,9 +236,7 @@ class TestSkillsAddCommand:
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", q_dir)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", tmp_path / "context"
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", tmp_path / "context")
 
         unmanaged_json = q_dir / "developer.json"
         unmanaged_json.write_text(
@@ -336,22 +316,12 @@ class TestSkillsRemoveCommand:
 
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", context_dir
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", context_dir)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", q_dir)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", copilot_dir
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.services.settings_service.get_agent_dirs", lambda: {}
-        )
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", lambda: []
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.COPILOT_AGENTS_DIR", copilot_dir)
+        monkeypatch.setattr("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR", local_store)
+        monkeypatch.setattr("cli_agent_orchestrator.services.settings_service.get_agent_dirs", lambda: {})
+        monkeypatch.setattr("cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", lambda: [])
 
         (local_store / "developer.md").write_text(
             "---\nname: developer\ndescription: Developer\nprompt: Base prompt\n---\nBody\n",
@@ -394,9 +364,7 @@ class TestSkillsRemoveCommand:
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", skill_store)
         monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.Q_AGENTS_DIR", q_dir)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", tmp_path / "context"
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.utils.skill_injection.AGENT_CONTEXT_DIR", tmp_path / "context")
 
         _create_skill(skill_store / "python-testing", "python-testing", "Pytest conventions")
         unmanaged_json = q_dir / "developer.json"

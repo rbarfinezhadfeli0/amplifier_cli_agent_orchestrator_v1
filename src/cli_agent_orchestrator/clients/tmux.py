@@ -5,7 +5,6 @@ import os
 import subprocess
 import time
 import uuid
-from typing import Dict, List, Optional
 
 import libtmux
 
@@ -46,7 +45,7 @@ class TmuxClient:
         }
     )
 
-    def _resolve_and_validate_working_directory(self, working_directory: Optional[str]) -> str:
+    def _resolve_and_validate_working_directory(self, working_directory: str | None) -> str:
         """Resolve and validate working directory.
 
         Canonicalizes the path (resolves symlinks, normalizes ``..``) and
@@ -99,8 +98,7 @@ class TmuxClient:
         # /var/folders (macOS temp) that happen to be under a blocked prefix.
         if real_path in self._BLOCKED_DIRECTORIES:
             raise ValueError(
-                f"Working directory not allowed: {working_directory} "
-                f"(resolves to blocked system path {real_path})"
+                f"Working directory not allowed: {working_directory} (resolves to blocked system path {real_path})"
             )
 
         # Step 4: Verify the directory actually exists
@@ -114,7 +112,7 @@ class TmuxClient:
         session_name: str,
         window_name: str,
         terminal_id: str,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
     ) -> str:
         """Create detached tmux session with initial window and return window name."""
         try:
@@ -163,7 +161,7 @@ class TmuxClient:
         session_name: str,
         window_name: str,
         terminal_id: str,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
     ) -> str:
         """Create window in session and return window name."""
         try:
@@ -179,9 +177,7 @@ class TmuxClient:
                 environment={"CAO_TERMINAL_ID": terminal_id},
             )
 
-            logger.info(
-                f"Created window '{window.name}' in session '{session_name}' in directory: {working_directory}"
-            )
+            logger.info(f"Created window '{window.name}' in session '{session_name}' in directory: {working_directory}")
             window_name_result = window.name
             if window_name_result is None:
                 raise ValueError(f"Window name is None for session {session_name}")
@@ -190,9 +186,7 @@ class TmuxClient:
             logger.error(f"Failed to create window in session {session_name}: {e}")
             raise
 
-    def send_keys(
-        self, session_name: str, window_name: str, keys: str, enter_count: int = 1
-    ) -> None:
+    def send_keys(self, session_name: str, window_name: str, keys: str, enter_count: int = 1) -> None:
         """Send keys to window using tmux paste-buffer for instant delivery.
 
         Uses load-buffer + paste-buffer instead of chunked send-keys to avoid
@@ -260,9 +254,7 @@ class TmuxClient:
             text: Text to paste into the pane
         """
         try:
-            logger.info(
-                f"send_keys_via_paste: {session_name}:{window_name} - text length: {len(text)}"
-            )
+            logger.info(f"send_keys_via_paste: {session_name}:{window_name} - text length: {len(text)}")
 
             session = self.server.sessions.get(session_name=session_name)
             if not session:
@@ -330,9 +322,7 @@ class TmuxClient:
             logger.error(f"Failed to send special key to {session_name}:{window_name}: {e}")
             raise
 
-    def get_history(
-        self, session_name: str, window_name: str, tail_lines: Optional[int] = None
-    ) -> str:
+    def get_history(self, session_name: str, window_name: str, tail_lines: int | None = None) -> str:
         """Get window history.
 
         Args:
@@ -359,10 +349,10 @@ class TmuxClient:
             logger.error(f"Failed to get history from {session_name}:{window_name}: {e}")
             raise
 
-    def list_sessions(self) -> List[Dict[str, str]]:
+    def list_sessions(self) -> list[dict[str, str]]:
         """List all tmux sessions."""
         try:
-            sessions: List[Dict[str, str]] = []
+            sessions: list[dict[str, str]] = []
             for session in self.server.sessions:
                 # Check if session has attached clients
                 is_attached = len(getattr(session, "attached_sessions", [])) > 0
@@ -381,14 +371,14 @@ class TmuxClient:
             logger.error(f"Failed to list sessions: {e}")
             return []
 
-    def get_session_windows(self, session_name: str) -> List[Dict[str, str]]:
+    def get_session_windows(self, session_name: str) -> list[dict[str, str]]:
         """Get all windows in a session."""
         try:
             session = self.server.sessions.get(session_name=session_name)
             if not session:
                 return []
 
-            windows: List[Dict[str, str]] = []
+            windows: list[dict[str, str]] = []
             for window in session.windows:
                 window_name = window.name if window.name is not None else ""
                 windows.append({"name": window_name, "index": str(window.index)})
@@ -435,7 +425,7 @@ class TmuxClient:
         except Exception:
             return False
 
-    def get_pane_working_directory(self, session_name: str, window_name: str) -> Optional[str]:
+    def get_pane_working_directory(self, session_name: str, window_name: str) -> str | None:
         """Get the current working directory of a pane."""
         try:
             session = self.server.sessions.get(session_name=session_name)

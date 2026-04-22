@@ -1,18 +1,17 @@
 """Tests for the inbox service."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.inbox import MessageStatus
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.services.inbox_service import (
-    LogFileHandler,
-    _get_log_tail,
-    _has_idle_pattern,
-    check_and_send_pending_messages,
-)
+from cli_agent_orchestrator.services.inbox_service import LogFileHandler
+from cli_agent_orchestrator.services.inbox_service import _get_log_tail
+from cli_agent_orchestrator.services.inbox_service import _has_idle_pattern
+from cli_agent_orchestrator.services.inbox_service import check_and_send_pending_messages
 
 
 class TestGetLogTail:

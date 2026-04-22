@@ -1,12 +1,13 @@
 """Tests for the flow CLI command."""
 
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
 
-from cli_agent_orchestrator.cli.commands.flow import add, disable, enable, flow, list, remove, run
+from cli_agent_orchestrator.cli.commands.flow import flow
 
 
 class TestFlowGroup:

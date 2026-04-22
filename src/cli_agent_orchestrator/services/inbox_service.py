@@ -26,11 +26,14 @@ import re
 import subprocess
 from pathlib import Path
 
-from watchdog.events import FileModifiedEvent, FileSystemEventHandler
+from watchdog.events import FileModifiedEvent
+from watchdog.events import FileSystemEventHandler
 
-from cli_agent_orchestrator.clients.database import get_pending_messages, update_message_status
+from cli_agent_orchestrator.clients.database import get_pending_messages
+from cli_agent_orchestrator.clients.database import update_message_status
 from cli_agent_orchestrator.constants import TERMINAL_LOG_DIR
-from cli_agent_orchestrator.models.inbox import MessageStatus, OrchestrationType
+from cli_agent_orchestrator.models.inbox import MessageStatus
+from cli_agent_orchestrator.models.inbox import OrchestrationType
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.plugins import PluginRegistry
 from cli_agent_orchestrator.providers.manager import provider_manager
@@ -48,9 +51,7 @@ def _get_log_tail(terminal_id: str, lines: int = 100) -> str:
     """
     log_path = TERMINAL_LOG_DIR / f"{terminal_id}.log"
     try:
-        result = subprocess.run(
-            ["tail", "-n", str(lines), str(log_path)], capture_output=True, text=True, timeout=1
-        )
+        result = subprocess.run(["tail", "-n", str(lines), str(log_path)], capture_output=True, text=True, timeout=1)
         return result.stdout
     except Exception:
         return ""
@@ -72,9 +73,7 @@ def _has_idle_pattern(terminal_id: str) -> bool:
         return False
 
 
-def check_and_send_pending_messages(
-    terminal_id: str, registry: PluginRegistry | None = None
-) -> bool:
+def check_and_send_pending_messages(terminal_id: str, registry: PluginRegistry | None = None) -> bool:
     """Check for pending messages and send if terminal is ready.
 
     Args:
@@ -160,9 +159,7 @@ class LogFileHandler(FileSystemEventHandler):
 
             # Fast check: does log tail have idle pattern?
             if not _has_idle_pattern(terminal_id):
-                logger.debug(
-                    f"Terminal {terminal_id} not idle (no idle pattern in log tail), skipping"
-                )
+                logger.debug(f"Terminal {terminal_id} not idle (no idle pattern in log tail), skipping")
                 return
 
             # Attempt delivery

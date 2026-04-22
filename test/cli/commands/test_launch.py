@@ -3,7 +3,6 @@
 import os
 from unittest.mock import patch
 
-import pytest
 from click.testing import CliRunner
 
 from cli_agent_orchestrator.cli.commands.launch import launch
@@ -17,7 +16,6 @@ def test_launch_passes_cwd_by_default():
         patch("cli_agent_orchestrator.cli.commands.launch.requests.post") as mock_post,
         patch("cli_agent_orchestrator.cli.commands.launch.subprocess.run") as mock_subprocess,
     ):
-
         # Mock successful API response
         mock_post.return_value.json.return_value = {
             "session_name": "test-session",
@@ -62,9 +60,7 @@ def test_launch_with_session_name():
         }
         mock_post.return_value.raise_for_status.return_value = None
 
-        result = runner.invoke(
-            launch, ["--agents", "test-agent", "--session-name", "custom-session", "--yolo"]
-        )
+        result = runner.invoke(launch, ["--agents", "test-agent", "--session-name", "custom-session", "--yolo"])
 
         assert result.exit_code == 0
 
@@ -156,9 +152,7 @@ def test_launch_workspace_confirmation_declined():
     runner = CliRunner()
 
     # Provide 'n' input to decline the confirmation prompt
-    result = runner.invoke(
-        launch, ["--agents", "test-agent", "--provider", "claude_code"], input="n\n"
-    )
+    result = runner.invoke(launch, ["--agents", "test-agent", "--provider", "claude_code"], input="n\n")
 
     assert result.exit_code != 0
     assert "Launch cancelled by user" in result.output
@@ -178,9 +172,7 @@ def test_launch_workspace_confirmation_skipped_with_yolo_flag():
         }
         mock_post.return_value.raise_for_status.return_value = None
 
-        result = runner.invoke(
-            launch, ["--agents", "test-agent", "--provider", "claude_code", "--headless", "--yolo"]
-        )
+        result = runner.invoke(launch, ["--agents", "test-agent", "--provider", "claude_code", "--headless", "--yolo"])
 
         assert result.exit_code == 0
         # --yolo shows warning but no confirmation prompt

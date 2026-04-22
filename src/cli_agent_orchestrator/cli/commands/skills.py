@@ -7,11 +7,9 @@ import click
 
 from cli_agent_orchestrator.constants import SKILLS_DIR
 from cli_agent_orchestrator.utils.skill_injection import refresh_all_cao_managed_agents
-from cli_agent_orchestrator.utils.skills import (
-    list_skills,
-    validate_skill_folder,
-    validate_skill_name,
-)
+from cli_agent_orchestrator.utils.skills import list_skills
+from cli_agent_orchestrator.utils.skills import validate_skill_folder
+from cli_agent_orchestrator.utils.skills import validate_skill_name
 
 
 def _install_skill_folder(source_dir: Path, force: bool = False) -> Path:
@@ -24,9 +22,7 @@ def _install_skill_folder(source_dir: Path, force: bool = False) -> Path:
 
     if destination_dir.exists():
         if not force:
-            raise FileExistsError(
-                f"Skill '{skill_name}' already exists. Use --force to overwrite it."
-            )
+            raise FileExistsError(f"Skill '{skill_name}' already exists. Use --force to overwrite it.")
         shutil.rmtree(destination_dir)
 
     shutil.copytree(source_dir, destination_dir)

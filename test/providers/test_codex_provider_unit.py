@@ -1,18 +1,20 @@
 """Unit tests for Codex provider."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.providers.codex import CodexProvider, ProviderError
+from cli_agent_orchestrator.providers.codex import CodexProvider
+from cli_agent_orchestrator.providers.codex import ProviderError
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 def load_fixture(filename: str) -> str:
-    with open(FIXTURES_DIR / filename, "r") as f:
+    with open(FIXTURES_DIR / filename) as f:
         return f.read()
 
 
@@ -251,9 +253,7 @@ class TestCodexBuildCommand:
     @patch("cli_agent_orchestrator.providers.codex.wait_for_shell")
     @patch("cli_agent_orchestrator.providers.codex.load_agent_profile")
     @patch("cli_agent_orchestrator.providers.codex.tmux_client")
-    def test_initialize_with_agent_profile(
-        self, mock_tmux, mock_load_profile, mock_wait_shell, mock_wait_status
-    ):
+    def test_initialize_with_agent_profile(self, mock_tmux, mock_load_profile, mock_wait_shell, mock_wait_status):
         mock_wait_shell.return_value = True
         mock_wait_status.return_value = True
         mock_tmux.get_history.return_value = "OpenAI Codex (v0.98.0)"
@@ -394,10 +394,7 @@ class TestCodexProviderStatusDetection:
         # "failed" is commonly used in normal assistant output; it should not automatically
         # force ERROR.
         mock_tmux.get_history.return_value = (
-            "You Explain why the test failed\n"
-            "assistant: The test failed because the assertion is incorrect.\n"
-            "\n"
-            "❯ \n"
+            "You Explain why the test failed\nassistant: The test failed because the assertion is incorrect.\n\n❯ \n"
         )
 
         provider = CodexProvider("test1234", "test-session", "window-0")
@@ -409,7 +406,7 @@ class TestCodexProviderStatusDetection:
     def test_get_status_idle_if_no_assistant_after_last_user(self, mock_tmux):
         # If there is a user message but no assistant response after it, we should not
         # treat the session as COMPLETED.
-        mock_tmux.get_history.return_value = "assistant: Welcome\n" "You Do the thing\n" "\n" "❯ \n"
+        mock_tmux.get_history.return_value = "assistant: Welcome\nYou Do the thing\n\n❯ \n"
 
         provider = CodexProvider("test1234", "test-session", "window-0")
         status = provider.get_status()
@@ -430,11 +427,7 @@ class TestCodexProviderStatusDetection:
     @patch("cli_agent_orchestrator.providers.codex.tmux_client")
     def test_get_status_not_error_when_assistant_mentions_error_text(self, mock_tmux):
         mock_tmux.get_history.return_value = (
-            "You Explain the failure\n"
-            "assistant: Here's an example error:\n"
-            "Error: example only\n"
-            "\n"
-            "❯ \n"
+            "You Explain the failure\nassistant: Here's an example error:\nError: example only\n\n❯ \n"
         )
 
         provider = CodexProvider("test1234", "test-session", "window-0")
@@ -445,11 +438,7 @@ class TestCodexProviderStatusDetection:
     @patch("cli_agent_orchestrator.providers.codex.tmux_client")
     def test_get_status_not_waiting_when_assistant_mentions_approval_text(self, mock_tmux):
         mock_tmux.get_history.return_value = (
-            "You Explain approvals\n"
-            "assistant: You might see this prompt:\n"
-            "Approve this command? [y/n]\n"
-            "\n"
-            "❯ \n"
+            "You Explain approvals\nassistant: You might see this prompt:\nApprove this command? [y/n]\n\n❯ \n"
         )
 
         provider = CodexProvider("test1234", "test-session", "window-0")
@@ -603,13 +592,7 @@ class TestCodexBulletFormatStatusDetection:
     def test_get_status_completed_multi_turn_bullet(self, mock_tmux):
         """COMPLETED uses last user message in multi-turn bullet format."""
         mock_tmux.get_history.return_value = (
-            "› first question\n"
-            "• First answer.\n"
-            "\n"
-            "› second question\n"
-            "• Second answer with details.\n"
-            "\n"
-            "› \n"
+            "› first question\n• First answer.\n\n› second question\n• Second answer with details.\n\n› \n"
         )
 
         provider = CodexProvider("test1234", "test-session", "window-0")
@@ -1044,9 +1027,7 @@ class TestCodexProviderTrustPrompt:
         """Test that initialize handles trust prompt during startup."""
         mock_wait_shell.return_value = True
         mock_wait_status.return_value = True
-        mock_tmux.get_history.return_value = (
-            "allow Codex to work in this folder without asking for approval.\n"
-        )
+        mock_tmux.get_history.return_value = "allow Codex to work in this folder without asking for approval.\n"
         mock_session = MagicMock()
         mock_window = MagicMock()
         mock_pane = MagicMock()

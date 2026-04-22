@@ -1,12 +1,8 @@
 """Tests for the tool_mapping utility module."""
 
-import pytest
-
-from cli_agent_orchestrator.utils.tool_mapping import (
-    format_tool_summary,
-    get_disallowed_tools,
-    resolve_allowed_tools,
-)
+from cli_agent_orchestrator.utils.tool_mapping import format_tool_summary
+from cli_agent_orchestrator.utils.tool_mapping import get_disallowed_tools
+from cli_agent_orchestrator.utils.tool_mapping import resolve_allowed_tools
 
 
 class TestResolveAllowedTools:
@@ -82,16 +78,12 @@ class TestGetDisallowedTools:
 
     def test_claude_code_developer_allows_all(self):
         """Developer with fs_* and execute_bash should not block anything."""
-        result = get_disallowed_tools(
-            "claude_code", ["@builtin", "fs_*", "execute_bash", "@cao-mcp-server"]
-        )
+        result = get_disallowed_tools("claude_code", ["@builtin", "fs_*", "execute_bash", "@cao-mcp-server"])
         assert result == []
 
     def test_claude_code_reviewer_blocks_write(self):
         """Reviewer with fs_read and fs_list should block Edit, Write, Bash."""
-        result = get_disallowed_tools(
-            "claude_code", ["@builtin", "fs_read", "fs_list", "@cao-mcp-server"]
-        )
+        result = get_disallowed_tools("claude_code", ["@builtin", "fs_read", "fs_list", "@cao-mcp-server"])
         assert "Bash" in result
         assert "Edit" in result
         assert "Write" in result

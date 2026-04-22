@@ -2,7 +2,8 @@
 
 import pytest
 
-from cli_agent_orchestrator.models.session import Session, SessionStatus
+from cli_agent_orchestrator.models.session import Session
+from cli_agent_orchestrator.models.session import SessionStatus
 
 
 class TestSessionStatus:

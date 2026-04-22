@@ -6,7 +6,10 @@ import subprocess
 import click
 import requests
 
-from cli_agent_orchestrator.constants import DEFAULT_PROVIDER, PROVIDERS, SERVER_HOST, SERVER_PORT
+from cli_agent_orchestrator.constants import DEFAULT_PROVIDER
+from cli_agent_orchestrator.constants import PROVIDERS
+from cli_agent_orchestrator.constants import SERVER_HOST
+from cli_agent_orchestrator.constants import SERVER_PORT
 
 # Providers that require workspace folder access
 PROVIDERS_REQUIRING_WORKSPACE_ACCESS = {
@@ -23,9 +26,7 @@ PROVIDERS_REQUIRING_WORKSPACE_ACCESS = {
 @click.option("--agents", required=True, help="Agent profile to launch")
 @click.option("--session-name", help="Name of the session (default: auto-generated)")
 @click.option("--headless", is_flag=True, help="Launch in detached mode")
-@click.option(
-    "--provider", default=DEFAULT_PROVIDER, help=f"Provider to use (default: {DEFAULT_PROVIDER})"
-)
+@click.option("--provider", default=DEFAULT_PROVIDER, help=f"Provider to use (default: {DEFAULT_PROVIDER})")
 @click.option(
     "--allowed-tools",
     multiple=True,
@@ -47,17 +48,13 @@ def launch(agents, session_name, headless, provider, allowed_tools, auto_approve
     try:
         # Validate provider
         if provider not in PROVIDERS:
-            raise click.ClickException(
-                f"Invalid provider '{provider}'. Available providers: {', '.join(PROVIDERS)}"
-            )
+            raise click.ClickException(f"Invalid provider '{provider}'. Available providers: {', '.join(PROVIDERS)}")
         working_directory = os.path.realpath(os.getcwd())
 
         # Resolve allowedTools: --yolo > --allowed-tools CLI > profile/role defaults
         from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
-        from cli_agent_orchestrator.utils.tool_mapping import (
-            format_tool_summary,
-            resolve_allowed_tools,
-        )
+        from cli_agent_orchestrator.utils.tool_mapping import format_tool_summary
+        from cli_agent_orchestrator.utils.tool_mapping import resolve_allowed_tools
 
         resolved_allowed_tools = None
         no_role_set = False
@@ -73,9 +70,7 @@ def launch(agents, session_name, headless, provider, allowed_tools, auto_approve
                 mcp_server_names = list(profile.mcpServers.keys()) if profile.mcpServers else None
                 no_role_set = not profile.role and not profile.allowedTools
                 resolved_role = profile.role
-                resolved_allowed_tools = resolve_allowed_tools(
-                    profile.allowedTools, profile.role, mcp_server_names
-                )
+                resolved_allowed_tools = resolve_allowed_tools(profile.allowedTools, profile.role, mcp_server_names)
             except (FileNotFoundError, RuntimeError):
                 # Profile not found — use developer defaults (backward compatible)
                 no_role_set = True
@@ -94,9 +89,7 @@ def launch(agents, session_name, headless, provider, allowed_tools, auto_approve
             else:
                 # Normal launch: show tool summary and confirm
                 tool_summary = format_tool_summary(resolved_allowed_tools)
-                role_display = (
-                    resolved_role if resolved_role else "(not set — using developer defaults)"
-                )
+                role_display = resolved_role if resolved_role else "(not set — using developer defaults)"
 
                 click.echo(
                     f"\nAgent '{agents}' launching on {provider}:\n"

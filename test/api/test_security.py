@@ -1,6 +1,5 @@
 """Security tests for DNS rebinding protection and host validation."""
 
-import pytest
 from fastapi.testclient import TestClient
 
 from cli_agent_orchestrator.api.main import app
@@ -147,9 +146,7 @@ class TestRealWorldAttackScenarios:
         assert response.status_code == 400
 
         # Step 2: List terminals (should be blocked)
-        response = client.get(
-            "/sessions/cao-fake-session/terminals", headers={"Host": "attack.poc"}
-        )
+        response = client.get("/sessions/cao-fake-session/terminals", headers={"Host": "attack.poc"})
         assert response.status_code == 400
 
         # Step 3: Inject malicious prompt (should be blocked)

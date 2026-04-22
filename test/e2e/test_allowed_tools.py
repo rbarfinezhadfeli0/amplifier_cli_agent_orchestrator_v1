@@ -41,18 +41,15 @@ Run:
 import time
 import uuid
 from pathlib import Path
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    extract_output,
-    get_terminal_status,
-    wait_for_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import cleanup_terminal
+from test.e2e.conftest import extract_output
+from test.e2e.conftest import get_terminal_status
+from test.e2e.conftest import wait_for_status
 
 COMPLETION_TIMEOUT = 180
 
@@ -61,9 +58,7 @@ COMPLETION_TIMEOUT = 180
 # (proof of bash execution), not in the agent's text output.
 _RANDOM_TOKEN = uuid.uuid4().hex
 BASH_MARKER_FILE = f"/tmp/cao_e2e_bash_test_{_RANDOM_TOKEN}.txt"
-BASH_TASK = (
-    f"Run this exact shell command: echo SUCCESS > {BASH_MARKER_FILE} " f"&& cat {BASH_MARKER_FILE}"
-)
+BASH_TASK = f"Run this exact shell command: echo SUCCESS > {BASH_MARKER_FILE} && cat {BASH_MARKER_FILE}"
 
 # Keywords indicating the agent was blocked from using bash
 REFUSAL_KEYWORDS = [
@@ -156,9 +151,9 @@ def _send_task_and_get_output(terminal_id: str, message: str) -> str:
     )
     assert resp.status_code == 200, f"Send message failed: {resp.status_code}"
 
-    assert wait_for_status(
-        terminal_id, "completed", timeout=COMPLETION_TIMEOUT
-    ), f"Terminal did not reach COMPLETED within {COMPLETION_TIMEOUT}s"
+    assert wait_for_status(terminal_id, "completed", timeout=COMPLETION_TIMEOUT), (
+        f"Terminal did not reach COMPLETED within {COMPLETION_TIMEOUT}s"
+    )
 
     # Stabilization
     time.sleep(5)
@@ -183,9 +178,7 @@ def _run_restricted_tool_test(provider: str, agent_profile: str, allowed_tools: 
     actual_session = None
 
     try:
-        terminal_id, actual_session = _create_terminal_with_tools(
-            provider, agent_profile, allowed_tools, session_name
-        )
+        terminal_id, actual_session = _create_terminal_with_tools(provider, agent_profile, allowed_tools, session_name)
         assert terminal_id, "Terminal ID should not be empty"
 
         s = _wait_for_ready(terminal_id)
@@ -243,9 +236,7 @@ def _run_unrestricted_tool_test(provider: str, agent_profile: str):
     actual_session = None
 
     try:
-        terminal_id, actual_session = _create_terminal_with_tools(
-            provider, agent_profile, "*", session_name
-        )
+        terminal_id, actual_session = _create_terminal_with_tools(provider, agent_profile, "*", session_name)
         assert terminal_id, "Terminal ID should not be empty"
 
         s = _wait_for_ready(terminal_id)
@@ -285,9 +276,7 @@ def _run_allowed_tools_stored_test(provider: str, agent_profile: str, allowed_to
     actual_session = None
 
     try:
-        terminal_id, actual_session = _create_terminal_with_tools(
-            provider, agent_profile, allowed_tools, session_name
-        )
+        terminal_id, actual_session = _create_terminal_with_tools(provider, agent_profile, allowed_tools, session_name)
         assert terminal_id, "Terminal ID should not be empty"
 
         s = _wait_for_ready(terminal_id)
@@ -303,15 +292,12 @@ def _run_allowed_tools_stored_test(provider: str, agent_profile: str, allowed_to
 
         # Verify allowed_tools is stored and returned
         stored_tools = terminal_data.get("allowed_tools")
-        assert stored_tools is not None, (
-            f"allowed_tools should be stored in terminal metadata. " f"Got: {terminal_data}"
-        )
+        assert stored_tools is not None, f"allowed_tools should be stored in terminal metadata. Got: {terminal_data}"
 
         # Verify the stored tools match what we sent
         expected_tools = allowed_tools.split(",")
         assert stored_tools == expected_tools, (
-            f"Stored allowed_tools should match. "
-            f"Expected: {expected_tools}, got: {stored_tools}"
+            f"Stored allowed_tools should match. Expected: {expected_tools}, got: {stored_tools}"
         )
 
     finally:
@@ -428,9 +414,9 @@ class TestClaudeCodeAllowedTools:
             output_lower = output.lower()
 
             # Agent should not have written the file
-            assert "WRITE_TEST_MARKER" not in output or any(
-                kw in output_lower for kw in REFUSAL_KEYWORDS
-            ), f"Reviewer should not be able to write files. Output: {output[:500]}"
+            assert "WRITE_TEST_MARKER" not in output or any(kw in output_lower for kw in REFUSAL_KEYWORDS), (
+                f"Reviewer should not be able to write files. Output: {output[:500]}"
+            )
 
         finally:
             if terminal_id and actual_session:

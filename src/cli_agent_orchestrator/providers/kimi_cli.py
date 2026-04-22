@@ -33,13 +33,13 @@ import shlex
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
+from cli_agent_orchestrator.utils.terminal import wait_until_status
 
 logger = logging.getLogger(__name__)
 
@@ -114,9 +114,7 @@ THINKING_BULLET_RAW_PATTERN = r"\x1b\[38;5;244m\s*•"
 STATUS_BAR_PATTERN = r"\d+:\d+\s+.*(?:agent|shell)\s*\("
 
 # Generic error patterns for detecting failure states in terminal output.
-ERROR_PATTERN = (
-    r"^(?:Error:|ERROR:|Traceback \(most recent call last\):|ConnectionError:|APIError:)"
-)
+ERROR_PATTERN = r"^(?:Error:|ERROR:|Traceback \(most recent call last\):|ConnectionError:|APIError:)"
 
 
 class KimiCliProvider(BaseProvider):
@@ -139,16 +137,16 @@ class KimiCliProvider(BaseProvider):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[list] = None,
-        skill_prompt: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list | None = None,
+        skill_prompt: str | None = None,
     ):
         """Initialize provider state."""
         super().__init__(terminal_id, session_name, window_name, allowed_tools, skill_prompt)
         self._initialized = False
         self._agent_profile = agent_profile
         # Track temp directory for cleanup (created when agent profile needs temp files)
-        self._temp_dir: Optional[str] = None
+        self._temp_dir: str | None = None
         # Latching flag: set True when user input box (╭─) is detected in ANY
         # get_status() call. Persists even after the box scrolls out of the
         # tmux capture window (200 lines). This is needed because:
@@ -222,12 +220,7 @@ class KimiCliProvider(BaseProvider):
                     # Create the agent YAML that extends the default agent
                     # and points to our custom system prompt file.
                     # Written as plain string to avoid adding PyYAML dependency.
-                    agent_yaml = (
-                        "version: 1\n"
-                        "agent:\n"
-                        "  extend: default\n"
-                        "  system_prompt_path: ./system.md\n"
-                    )
+                    agent_yaml = "version: 1\nagent:\n  extend: default\n  system_prompt_path: ./system.md\n"
                     agent_file = os.path.join(self._temp_dir, "agent.yaml")
                     with open(agent_file, "w") as f:
                         f.write(agent_yaml)
@@ -305,14 +298,10 @@ class KimiCliProvider(BaseProvider):
                 if current_value < 600000:
                     new_content = re.sub(pattern, r"\g<1>600000", content)
                     config_path.write_text(new_content)
-                    logger.info(
-                        f"Set MCP tool_call_timeout_ms to 600000 "
-                        f"(was {current_value}) in {config_path}"
-                    )
+                    logger.info(f"Set MCP tool_call_timeout_ms to 600000 (was {current_value}) in {config_path}")
             else:
                 logger.warning(
-                    f"tool_call_timeout_ms not found in {config_path}, "
-                    "MCP tool calls may time out during handoff"
+                    f"tool_call_timeout_ms not found in {config_path}, MCP tool calls may time out during handoff"
                 )
         except Exception as e:
             logger.warning(f"Failed to set MCP timeout in {config_path}: {e}")
@@ -359,7 +348,7 @@ class KimiCliProvider(BaseProvider):
         self._initialized = True
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Kimi CLI status by analyzing terminal output.
 
         Status detection logic:

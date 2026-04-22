@@ -1,8 +1,7 @@
 """Tests for _resolve_child_allowed_tools in MCP server."""
 
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from cli_agent_orchestrator.mcp_server.server import _resolve_child_allowed_tools
 
@@ -12,9 +11,7 @@ class TestResolveChildAllowedTools:
 
     @patch("cli_agent_orchestrator.utils.tool_mapping.resolve_allowed_tools")
     @patch("cli_agent_orchestrator.utils.agent_profiles.load_agent_profile")
-    def test_child_wildcard_with_restricted_parent_returns_unrestricted(
-        self, mock_load, mock_resolve
-    ):
+    def test_child_wildcard_with_restricted_parent_returns_unrestricted(self, mock_load, mock_resolve):
         """Issue #141: child with allowedTools=["*"] should NOT inherit parent restrictions."""
         mock_profile = MagicMock()
         mock_profile.allowedTools = ["*"]

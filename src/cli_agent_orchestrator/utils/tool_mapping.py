@@ -7,13 +7,12 @@ given a set of allowed CAO tools.
 """
 
 import logging
-from typing import Dict, List, Set
 
 logger = logging.getLogger(__name__)
 
 # All CAO tool categories and what they map to in each provider.
 # Keys are provider names, values map CAO tool names to lists of native tool names.
-TOOL_MAPPING: Dict[str, Dict[str, List[str]]] = {
+TOOL_MAPPING: dict[str, dict[str, list[str]]] = {
     "claude_code": {
         "execute_bash": ["Bash"],
         "fs_read": ["Read"],
@@ -45,15 +44,15 @@ TOOL_MAPPING: Dict[str, Dict[str, List[str]]] = {
 }
 
 # Complete set of all native tools per provider (used to compute disallowed set).
-ALL_NATIVE_TOOLS: Dict[str, Set[str]] = {}
+ALL_NATIVE_TOOLS: dict[str, set[str]] = {}
 for _provider, _mapping in TOOL_MAPPING.items():
-    tools: Set[str] = set()
+    tools: set[str] = set()
     for _native_list in _mapping.values():
         tools.update(_native_list)
     ALL_NATIVE_TOOLS[_provider] = tools
 
 
-def _get_role_defaults(role: str) -> List[str] | None:
+def _get_role_defaults(role: str) -> list[str] | None:
     """Look up allowedTools for a role (built-in or custom from settings)."""
     from cli_agent_orchestrator.constants import ROLE_TOOL_DEFAULTS
 
@@ -73,10 +72,10 @@ def _get_role_defaults(role: str) -> List[str] | None:
 
 
 def resolve_allowed_tools(
-    profile_allowed_tools: List[str] | None,
+    profile_allowed_tools: list[str] | None,
     role: str | None,
-    mcp_server_names: List[str] | None = None,
-) -> List[str]:
+    mcp_server_names: list[str] | None = None,
+) -> list[str]:
     """Resolve the effective allowedTools for an agent.
 
     Resolution order:
@@ -94,8 +93,7 @@ def resolve_allowed_tools(
             allowed = role_defaults
         else:
             logger.warning(
-                "Unknown role '%s' — falling back to unrestricted. "
-                "Define custom roles in settings.json under 'roles'.",
+                "Unknown role '%s' — falling back to unrestricted. Define custom roles in settings.json under 'roles'.",
                 role,
             )
             allowed = ["*"]
@@ -115,7 +113,7 @@ def resolve_allowed_tools(
     return allowed
 
 
-def get_disallowed_tools(provider: str, allowed: List[str]) -> List[str]:
+def get_disallowed_tools(provider: str, allowed: list[str]) -> list[str]:
     """Given CAO allowedTools, return provider-native tool names to BLOCK.
 
     Args:
@@ -133,7 +131,7 @@ def get_disallowed_tools(provider: str, allowed: List[str]) -> List[str]:
         return []
 
     # Collect all native tools that are allowed
-    allowed_native: Set[str] = set()
+    allowed_native: set[str] = set()
     for cao_tool in allowed:
         if cao_tool.startswith("@"):
             # MCP server references don't map to native tools
@@ -147,7 +145,7 @@ def get_disallowed_tools(provider: str, allowed: List[str]) -> List[str]:
     return disallowed
 
 
-def format_tool_summary(allowed: List[str]) -> str:
+def format_tool_summary(allowed: list[str]) -> str:
     """Format allowedTools into a human-readable summary for the confirmation prompt.
 
     Returns:

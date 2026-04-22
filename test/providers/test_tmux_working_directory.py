@@ -1,8 +1,10 @@
 """Unit tests for TMux client working directory methods."""
 
 import os
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import Mock
+from unittest.mock import PropertyMock
+from unittest.mock import patch
 
 import pytest
 
@@ -106,9 +108,7 @@ class TestTmuxClientWorkingDirectory:
         client = TmuxClient()
         with patch("os.path.isdir", return_value=True):
             with patch("os.path.realpath", return_value="/home/user/test/dir"):
-                result = client.create_session(
-                    "test-session", "test-window", "terminal-1", "/home/user/test/dir"
-                )
+                result = client.create_session("test-session", "test-window", "terminal-1", "/home/user/test/dir")
 
         assert result == "test-window"
         self.mock_server.new_session.assert_called_once()
@@ -125,12 +125,9 @@ class TestTmuxClientWorkingDirectory:
         self.mock_server.new_session.return_value = mock_session
 
         client = TmuxClient()
-        with patch("os.getcwd", return_value="/home/user/project"):
-            with patch("os.path.isdir", return_value=True):
-                with patch("os.path.realpath", return_value="/home/user/project"):
-                    result = client.create_session(
-                        "test-session", "test-window", "terminal-1", None
-                    )
+        with patch("os.getcwd", return_value="/home/user/project"), patch("os.path.isdir", return_value=True):
+            with patch("os.path.realpath", return_value="/home/user/project"):
+                result = client.create_session("test-session", "test-window", "terminal-1", None)
 
         assert result == "test-window"
         self.mock_server.new_session.assert_called_once()
@@ -149,9 +146,7 @@ class TestTmuxClientWorkingDirectory:
         client = TmuxClient()
         with patch("os.path.isdir", return_value=True):
             with patch("os.path.realpath", return_value="/home/user/test/dir"):
-                result = client.create_window(
-                    "test-session", "test-window", "terminal-1", "/home/user/test/dir"
-                )
+                result = client.create_window("test-session", "test-window", "terminal-1", "/home/user/test/dir")
 
         assert result == "test-window"
         mock_session.new_window.assert_called_once()
@@ -161,9 +156,8 @@ class TestTmuxClientWorkingDirectory:
     def test_resolve_home_directory_itself(self):
         """Test that home directory itself is allowed."""
         client = TmuxClient()
-        with patch("os.path.isdir", return_value=True):
-            with patch("os.path.realpath", return_value="/home/user"):
-                result = client._resolve_and_validate_working_directory("/home/user")
+        with patch("os.path.isdir", return_value=True), patch("os.path.realpath", return_value="/home/user"):
+            result = client._resolve_and_validate_working_directory("/home/user")
         assert result == "/home/user"
 
     def test_allows_path_outside_home_directory(self):
@@ -171,9 +165,7 @@ class TestTmuxClientWorkingDirectory:
         client = TmuxClient()
         with patch("os.path.isdir", return_value=True):
             with patch("os.path.realpath", return_value="/Volumes/workplace/project"):
-                result = client._resolve_and_validate_working_directory(
-                    "/Volumes/workplace/project"
-                )
+                result = client._resolve_and_validate_working_directory("/Volumes/workplace/project")
         assert result == "/Volumes/workplace/project"
 
     def test_allows_opt_directory(self):

@@ -77,9 +77,7 @@ def cleanup_session(test_session_name):
 class TestQCliProviderIntegration:
     """Integration tests with real Q CLI."""
 
-    def test_real_q_chat_initialization(
-        self, ensure_test_agent, test_session_name, cleanup_session
-    ):
+    def test_real_q_chat_initialization(self, ensure_test_agent, test_session_name, cleanup_session):
         """Test real Q CLI initialization flow."""
         # Create a test tmux session
         terminal_id = "test1234"
@@ -155,9 +153,7 @@ class TestQCliProviderIntegration:
             # Cleanup
             tmux_client.kill_session(test_session_name)
 
-    def test_real_q_chat_status_detection(
-        self, ensure_test_agent, test_session_name, cleanup_session
-    ):
+    def test_real_q_chat_status_detection(self, ensure_test_agent, test_session_name, cleanup_session):
         """Test status detection with real Q CLI output."""
         # Create a test tmux session
         terminal_id = "test1234"
@@ -236,9 +232,7 @@ class TestQCliProviderIntegration:
             # Cleanup
             tmux_client.kill_session(test_session_name)
 
-    def test_real_q_chat_with_different_profile(
-        self, ensure_test_agent, test_session_name, cleanup_session
-    ):
+    def test_real_q_chat_with_different_profile(self, ensure_test_agent, test_session_name, cleanup_session):
         """Test Q CLI with a different agent profile if available."""
         # Create a test tmux session
         terminal_id = "test1234"
@@ -270,9 +264,7 @@ class TestQCliProviderIntegration:
 class TestQCliProviderHandoffIntegration:
     """Integration tests for handoff scenarios."""
 
-    def test_real_handoff_status_transitions(
-        self, ensure_test_agent, test_session_name, cleanup_session
-    ):
+    def test_real_handoff_status_transitions(self, ensure_test_agent, test_session_name, cleanup_session):
         """Test status transitions during a real handoff scenario."""
         # Create a test tmux session
         terminal_id = "test1234"
@@ -326,9 +318,7 @@ class TestQCliProviderHandoffIntegration:
             # Cleanup
             tmux_client.kill_session(test_session_name)
 
-    def test_real_handoff_message_integrity(
-        self, ensure_test_agent, test_session_name, cleanup_session
-    ):
+    def test_real_handoff_message_integrity(self, ensure_test_agent, test_session_name, cleanup_session):
         """Test that message extraction maintains integrity during handoff."""
         # Create a test tmux session
         terminal_id = "test1234"
@@ -359,13 +349,11 @@ class TestQCliProviderHandoffIntegration:
                 if initial_status != TerminalStatus.PROCESSING:
                     # Debug: print terminal output if not in expected state
                     debug_output = tmux_client.get_history(test_session_name, window_name)
-                    print(f"\n=== DEBUG: Unexpected initial status ===")
+                    print("\n=== DEBUG: Unexpected initial status ===")
                     print(f"Status: {initial_status}")
                     print(f"Terminal output:\n{debug_output}")
                     print("=" * 50)
-                assert (
-                    initial_status == TerminalStatus.PROCESSING
-                ), f"Expected PROCESSING but got {initial_status}"
+                assert initial_status == TerminalStatus.PROCESSING, f"Expected PROCESSING but got {initial_status}"
 
                 max_wait = 30
                 elapsed = 0
@@ -382,15 +370,15 @@ class TestQCliProviderHandoffIntegration:
                 if status != TerminalStatus.COMPLETED:
                     # Debug: print terminal output on failure
                     debug_output = tmux_client.get_history(test_session_name, window_name)
-                    print(f"\n=== DEBUG: Test failed ===")
+                    print("\n=== DEBUG: Test failed ===")
                     print(f"Final status: {status}")
                     print(f"Status history: {status_history}")
                     print(f"Terminal output:\n{debug_output}")
                     print("=" * 50)
 
-                assert (
-                    status == TerminalStatus.COMPLETED
-                ), f"Expected COMPLETED but got {status} after {elapsed} seconds. Status history: {status_history}"
+                assert status == TerminalStatus.COMPLETED, (
+                    f"Expected COMPLETED but got {status} after {elapsed} seconds. Status history: {status_history}"
+                )
 
             # Get the output
             output = tmux_client.get_history(test_session_name, window_name)
@@ -425,9 +413,7 @@ class TestQCliProviderWorkingDirectory:
         yield path
         shutil.rmtree(path, ignore_errors=True)
 
-    def test_session_starts_in_custom_directory(
-        self, test_session_name, cleanup_session, home_tmp_path
-    ):
+    def test_session_starts_in_custom_directory(self, test_session_name, cleanup_session, home_tmp_path):
         """Test that terminal starts in specified working directory."""
         # Create session with custom working directory
         window_name = tmux_client.create_session(
@@ -439,9 +425,7 @@ class TestQCliProviderWorkingDirectory:
 
         assert actual_dir == str(home_tmp_path.resolve())
 
-    def test_working_directory_changes_are_detected(
-        self, test_session_name, cleanup_session, home_tmp_path
-    ):
+    def test_working_directory_changes_are_detected(self, test_session_name, cleanup_session, home_tmp_path):
         """Test that directory changes in terminal are detected."""
         # Create session
         window_name = tmux_client.create_session(

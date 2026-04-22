@@ -3,11 +3,13 @@
 import logging
 import time
 import uuid
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
+from typing import Union
 
 import httpx
 
-from cli_agent_orchestrator.constants import API_BASE_URL, SESSION_PREFIX
+from cli_agent_orchestrator.constants import API_BASE_URL
+from cli_agent_orchestrator.constants import SESSION_PREFIX
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 
 if TYPE_CHECKING:
@@ -49,13 +51,13 @@ def wait_for_shell(
         output = tmux_client.get_history(session_name, window_name)
 
         if output and output.strip() and previous_output is not None and output == previous_output:
-            logger.info(f"Shell ready")
+            logger.info("Shell ready")
             return True
 
         previous_output = output
         time.sleep(polling_interval)
 
-    logger.warning(f"Timeout waiting for shell to be ready")
+    logger.warning("Timeout waiting for shell to be ready")
     return False
 
 

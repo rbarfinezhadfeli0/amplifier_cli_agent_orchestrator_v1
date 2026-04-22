@@ -23,16 +23,15 @@ Run:
 
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    extract_output,
-    get_terminal_status,
-    send_handoff_message,
-    wait_for_status,
-)
 
 import pytest
+
+from test.e2e.conftest import cleanup_terminal
+from test.e2e.conftest import create_terminal
+from test.e2e.conftest import extract_output
+from test.e2e.conftest import get_terminal_status
+from test.e2e.conftest import send_handoff_message
+from test.e2e.conftest import wait_for_status
 
 # Timeout for waiting for agent completion (seconds).
 # Agents may take varying amounts of time depending on model and task complexity.
@@ -81,9 +80,9 @@ def _run_handoff_test(provider: str, agent_profile: str, task_message: str, cont
         send_handoff_message(terminal_id, task_message, provider)
 
         # Step 4: Poll for COMPLETED with stabilization.
-        assert wait_for_status(
-            terminal_id, "completed", timeout=COMPLETION_TIMEOUT
-        ), f"Terminal did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        assert wait_for_status(terminal_id, "completed", timeout=COMPLETION_TIMEOUT), (
+            f"Terminal did not reach COMPLETED within {COMPLETION_TIMEOUT}s (provider={provider})"
+        )
 
         # Stabilization: re-check after short delay to catch premature COMPLETED.
         time.sleep(5)
@@ -111,9 +110,7 @@ def _run_handoff_test(provider: str, agent_profile: str, task_message: str, cont
         # At least one content keyword should be present
         output_lower = output.lower()
         matched = [kw for kw in content_keywords if kw.lower() in output_lower]
-        assert (
-            matched
-        ), f"Expected at least one of {content_keywords} in output, got: {output[:200]}"
+        assert matched, f"Expected at least one of {content_keywords} in output, got: {output[:200]}"
 
     finally:
         if terminal_id and actual_session:

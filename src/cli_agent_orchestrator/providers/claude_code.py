@@ -7,13 +7,12 @@ import shlex
 import subprocess
 import time
 from pathlib import Path
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +50,7 @@ THINKING_BEFORE_SEPARATOR_PATTERN = re.compile(
     re.MULTILINE,
 )
 IDLE_PROMPT_PATTERN = r"[>❯][\s\xa0]"  # Handle both old ">" and new "❯" prompt styles
-WAITING_USER_ANSWER_PATTERN = (
-    r"↑/↓ to navigate"  # Ink TUI footer shown only while a selection widget is active
-)
+WAITING_USER_ANSWER_PATTERN = r"↑/↓ to navigate"  # Ink TUI footer shown only while a selection widget is active
 TRUST_PROMPT_PATTERN = r"Yes, I trust this folder"  # Workspace trust dialog
 BYPASS_PROMPT_PATTERN = r"Yes, I accept"  # Bypass permissions confirmation dialog
 IDLE_PROMPT_PATTERN_LOG = r"[>❯][\s\xa0]"  # Same pattern for log files
@@ -67,9 +64,9 @@ class ClaudeCodeProvider(BaseProvider):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[list] = None,
-        skill_prompt: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list | None = None,
+        skill_prompt: str | None = None,
     ):
         """Initialize provider state."""
         super().__init__(terminal_id, session_name, window_name, allowed_tools, skill_prompt)
@@ -282,9 +279,7 @@ class ClaudeCodeProvider(BaseProvider):
             # the ──────── separator, bypass/trust prompt text, or "Claude Code"
             claude_started = bool(
                 re.search(r"\u2500{20,}", new_content)
-                or re.search(
-                    r"bypass permissions|trust this folder|Claude Code", new_content, re.IGNORECASE
-                )
+                or re.search(r"bypass permissions|trust this folder|Claude Code", new_content, re.IGNORECASE)
             )
             if claude_started:
                 status = self.get_status()
@@ -297,7 +292,7 @@ class ClaudeCodeProvider(BaseProvider):
         self._initialized = True
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Claude Code status by analyzing terminal output.
 
         Uses a structural "thinking-before-separator" check as the primary

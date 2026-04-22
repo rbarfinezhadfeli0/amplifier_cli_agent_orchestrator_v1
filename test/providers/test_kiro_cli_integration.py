@@ -23,7 +23,6 @@ import pytest
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.kiro_cli import KiroCliProvider
-from cli_agent_orchestrator.utils.terminal import wait_for_shell
 
 pytestmark = [pytest.mark.integration, pytest.mark.slow]
 
@@ -308,9 +307,9 @@ class TestKiroCliPermissionPromptIntegration:
         _log("P7", "Waiting for COMPLETED...")
         status = _wait_for_status(provider, TerminalStatus.COMPLETED, timeout=30)
         _log("P7", f"Status after first answer: {status}")
-        assert (
-            status == TerminalStatus.COMPLETED
-        ), f"First command didn't complete (status={status}), can't test second prompt"
+        assert status == TerminalStatus.COMPLETED, (
+            f"First command didn't complete (status={status}), can't test second prompt"
+        )
         before_count = len(PERM_RE.findall(_clean(test_session_name)))
         _log("P7", f"Permission prompts so far: {before_count}")
         _log("P7", "Sending: Run: echo 'second'")

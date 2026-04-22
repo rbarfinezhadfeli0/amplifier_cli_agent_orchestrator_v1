@@ -1,9 +1,5 @@
 """Tests for base provider."""
 
-from typing import Optional
-
-import pytest
-
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
 
@@ -14,7 +10,7 @@ class ConcreteProvider(BaseProvider):
     def initialize(self) -> bool:
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         return self._status
 
     def get_idle_pattern_for_log(self) -> str:
@@ -67,9 +63,7 @@ class TestBaseProvider:
 
     def test_apply_skill_prompt_appends(self):
         """Test _apply_skill_prompt appends skill text to base prompt."""
-        provider = ConcreteProvider(
-            "term-123", "session-1", "window-0", skill_prompt="## Skills\n- skill1"
-        )
+        provider = ConcreteProvider("term-123", "session-1", "window-0", skill_prompt="## Skills\n- skill1")
         result = provider._apply_skill_prompt("Base prompt")
         assert result == "Base prompt\n\n## Skills\n- skill1"
 

@@ -1,6 +1,5 @@
 """Generate test fixture files with proper ANSI escape sequences."""
 
-import os
 from pathlib import Path
 
 FIXTURES_DIR = Path(__file__).parent
@@ -19,9 +18,7 @@ fixtures = {
         "- Multiple sections\n\n"
         "\x1b[36m[developer]\x1b[35m>\x1b[39m "
     ),
-    "q_cli_processing_output.txt": (
-        "$ q chat --agent developer\n" "User input received, processing your request..."
-    ),
+    "q_cli_processing_output.txt": ("$ q chat --agent developer\nUser input received, processing your request..."),
     "q_cli_permission_output.txt": (
         "$ q chat --agent developer\n"
         "\x1b[38;5;10m> \x1b[39mI'd like to execute a command that requires your permission.\n\n"

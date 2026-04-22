@@ -4,13 +4,13 @@ import logging
 import re
 import shlex
 import time
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
+from cli_agent_orchestrator.utils.terminal import wait_until_status
 
 logger = logging.getLogger(__name__)
 
@@ -118,9 +118,9 @@ class CodexProvider(BaseProvider):
         terminal_id: str,
         session_name: str,
         window_name: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[list] = None,
-        skill_prompt: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list | None = None,
+        skill_prompt: str | None = None,
     ):
         """Initialize provider state."""
         super().__init__(terminal_id, session_name, window_name, allowed_tools, skill_prompt)
@@ -166,9 +166,7 @@ class CodexProvider(BaseProvider):
                     # Escape backslashes, double quotes, and newlines for TOML basic string.
                     # Newlines must become literal \n to prevent tmux send_keys from
                     # splitting the command across multiple lines.
-                    escaped_prompt = (
-                        system_prompt.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
-                    )
+                    escaped_prompt = system_prompt.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
                     command_parts.extend(["-c", f'developer_instructions="{escaped_prompt}"'])
 
                 # Add MCP servers via -c config overrides (per-session, no global config changes).
@@ -280,7 +278,7 @@ class CodexProvider(BaseProvider):
         self._initialized = True
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Codex status by analyzing terminal output."""
         output = tmux_client.get_history(self.session_name, self.window_name, tail_lines=tail_lines)
 
@@ -298,9 +296,7 @@ class CodexProvider(BaseProvider):
         # Only apply the cutoff when TUI footer indicators are actually present
         # to avoid over-excluding in short outputs or test fixtures.
         all_lines = clean_output.splitlines()
-        tui_footer_detected = any(
-            re.search(TUI_FOOTER_PATTERN, line) for line in all_lines[-IDLE_PROMPT_TAIL_LINES:]
-        )
+        tui_footer_detected = any(re.search(TUI_FOOTER_PATTERN, line) for line in all_lines[-IDLE_PROMPT_TAIL_LINES:])
         if tui_footer_detected:
             cutoff_pos = _compute_tui_footer_cutoff(all_lines)
         else:
@@ -401,9 +397,7 @@ class CodexProvider(BaseProvider):
         # Primary: find last user message, extract response between it and idle prompt.
         # Exclude the Codex TUI footer from user-message matching when detected.
         all_lines = clean_output.splitlines()
-        tui_footer_detected = any(
-            re.search(TUI_FOOTER_PATTERN, line) for line in all_lines[-IDLE_PROMPT_TAIL_LINES:]
-        )
+        tui_footer_detected = any(re.search(TUI_FOOTER_PATTERN, line) for line in all_lines[-IDLE_PROMPT_TAIL_LINES:])
         if tui_footer_detected:
             cutoff_pos = _compute_tui_footer_cutoff(all_lines)
         else:
@@ -464,9 +458,7 @@ class CodexProvider(BaseProvider):
                 return response_text.strip()
 
         # Fallback: assistant marker based extraction (no user message found).
-        matches = list(
-            re.finditer(ASSISTANT_PREFIX_PATTERN, clean_output, re.IGNORECASE | re.MULTILINE)
-        )
+        matches = list(re.finditer(ASSISTANT_PREFIX_PATTERN, clean_output, re.IGNORECASE | re.MULTILINE))
 
         if not matches:
             raise ValueError("No Codex response found - no assistant marker detected")

@@ -2,9 +2,8 @@
 
 import asyncio
 import os
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from cli_agent_orchestrator.mcp_server.server import _handoff_impl
 
@@ -91,9 +90,7 @@ class TestHandoffMessageContext:
     @patch("cli_agent_orchestrator.mcp_server.server._send_direct_input")
     @patch("cli_agent_orchestrator.mcp_server.server.wait_until_terminal_status")
     @patch("cli_agent_orchestrator.mcp_server.server._create_terminal")
-    def test_codex_handoff_context_includes_supervisor_id_from_env(
-        self, mock_create, mock_wait, mock_send
-    ):
+    def test_codex_handoff_context_includes_supervisor_id_from_env(self, mock_create, mock_wait, mock_send):
         """Supervisor terminal ID should come from CAO_TERMINAL_ID env var."""
         mock_create.return_value = ("dev-terminal-4", "codex")
         mock_wait.side_effect = [True, True]

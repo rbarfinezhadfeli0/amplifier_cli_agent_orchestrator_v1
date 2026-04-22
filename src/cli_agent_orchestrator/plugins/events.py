@@ -1,13 +1,15 @@
 """Typed plugin event dataclasses for CAO lifecycle and messaging hooks."""
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import UTC
+from datetime import datetime
 
 
 def _utc_now() -> datetime:
     """Return the current UTC time as a timezone-aware datetime."""
 
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 @dataclass

@@ -3,12 +3,12 @@
 import logging
 import re
 import shlex
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
+from cli_agent_orchestrator.utils.terminal import wait_until_status
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class QCliProvider(BaseProvider):
         session_name: str,
         window_name: str,
         agent_profile: str,
-        allowed_tools: Optional[list] = None,
+        allowed_tools: list | None = None,
     ):
         super().__init__(terminal_id, session_name, window_name, allowed_tools)
         # TODO: remove the ._initialized if it's not referenced anywhere
@@ -43,9 +43,7 @@ class QCliProvider(BaseProvider):
         # Matches: [agent] !> or [agent] > or [agent] X% > or [agent] λ > or [agent] X% λ >
         # after ANSI codes are stripped
         # Also matches with trailing text like "How can I help?"
-        self._idle_prompt_pattern = (
-            rf"\[{re.escape(self._agent_profile)}\]\s*(?:\d+%\s*)?(?:\u03bb\s*)?!?>\s*"
-        )
+        self._idle_prompt_pattern = rf"\[{re.escape(self._agent_profile)}\]\s*(?:\d+%\s*)?(?:\u03bb\s*)?!?>\s*"
         self._permission_prompt_pattern = r"Allow this action\?.*?\[.*?y.*?/.*?n.*?/.*?t.*?\]:"
 
     def initialize(self) -> bool:
@@ -57,15 +55,13 @@ class QCliProvider(BaseProvider):
         command = shlex.join(["q", "chat", "--agent", self._agent_profile])
         tmux_client.send_keys(self.session_name, self.window_name, command)
 
-        if not wait_until_status(
-            self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0
-        ):
+        if not wait_until_status(self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0):
             raise TimeoutError("Q CLI initialization timed out after 30 seconds")
 
         self._initialized = True
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Q CLI status by analyzing terminal output."""
         logger.debug(f"get_status: tail_lines={tail_lines}")
         output = tmux_client.get_history(self.session_name, self.window_name, tail_lines=tail_lines)
@@ -94,9 +90,7 @@ class QCliProvider(BaseProvider):
         if perm_matches:
             after_last_perm = clean_output[perm_matches[-1].end() :]
             lines_after = after_last_perm.split("\n")
-            idle_lines = sum(
-                1 for line in lines_after if re.search(self._idle_prompt_pattern, line)
-            )
+            idle_lines = sum(1 for line in lines_after if re.search(self._idle_prompt_pattern, line))
             if idle_lines <= 1:
                 return TerminalStatus.WAITING_USER_ANSWER
 
@@ -109,7 +103,7 @@ class QCliProvider(BaseProvider):
 
             for prompt in idle_prompts:
                 if prompt.start() > last_arrow_pos:
-                    logger.debug(f"get_status: returning COMPLETED")
+                    logger.debug("get_status: returning COMPLETED")
                     return TerminalStatus.COMPLETED
 
             # Has green arrow but no prompt after it - still processing

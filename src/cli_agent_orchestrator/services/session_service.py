@@ -20,20 +20,15 @@ Session Lifecycle:
 """
 
 import logging
-from typing import Dict, List
 
-from cli_agent_orchestrator.clients.database import (
-    delete_terminals_by_session,
-    list_terminals_by_session,
-)
+from cli_agent_orchestrator.clients.database import delete_terminals_by_session
+from cli_agent_orchestrator.clients.database import list_terminals_by_session
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.constants import SESSION_PREFIX
 from cli_agent_orchestrator.models.terminal import Terminal
-from cli_agent_orchestrator.plugins import (
-    PluginRegistry,
-    PostCreateSessionEvent,
-    PostKillSessionEvent,
-)
+from cli_agent_orchestrator.plugins import PluginRegistry
+from cli_agent_orchestrator.plugins import PostCreateSessionEvent
+from cli_agent_orchestrator.plugins import PostKillSessionEvent
 from cli_agent_orchestrator.providers.manager import provider_manager
 from cli_agent_orchestrator.services.plugin_dispatch import dispatch_plugin_event
 from cli_agent_orchestrator.services.terminal_service import create_terminal
@@ -71,7 +66,7 @@ def create_session(
     return terminal
 
 
-def list_sessions() -> List[Dict]:
+def list_sessions() -> list[dict]:
     """List all sessions from tmux."""
     try:
         tmux_sessions = tmux_client.list_sessions()
@@ -81,7 +76,7 @@ def list_sessions() -> List[Dict]:
         return []
 
 
-def get_session(session_name: str) -> Dict:
+def get_session(session_name: str) -> dict:
     """Get session with terminals."""
     try:
         if not tmux_client.session_exists(session_name):
@@ -101,13 +96,13 @@ def get_session(session_name: str) -> Dict:
         raise
 
 
-def delete_session(session_name: str, registry: PluginRegistry | None = None) -> Dict:
+def delete_session(session_name: str, registry: PluginRegistry | None = None) -> dict:
     """Delete session and cleanup.
 
     Returns:
         Dict with 'deleted' (list of deleted session names) and 'errors' (list of error dicts).
     """
-    result: Dict = {"deleted": [], "errors": []}
+    result: dict = {"deleted": [], "errors": []}
     try:
         if not tmux_client.session_exists(session_name):
             raise ValueError(f"Session '{session_name}' not found")

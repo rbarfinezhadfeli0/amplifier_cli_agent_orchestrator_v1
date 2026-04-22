@@ -1,6 +1,7 @@
 """Tests for info command."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from click.testing import CliRunner
 
@@ -76,12 +77,14 @@ class TestInfoCommand:
         mock_subprocess = MagicMock()
         mock_subprocess.stdout = "cao-test-session\n"
 
-        with patch("subprocess.run", return_value=mock_subprocess):
-            with patch(
+        with (
+            patch("subprocess.run", return_value=mock_subprocess),
+            patch(
                 "requests.get",
                 side_effect=req.exceptions.ConnectionError("Connection refused"),
-            ):
-                result = runner.invoke(info)
+            ),
+        ):
+            result = runner.invoke(info)
 
         assert result.exit_code == 0
         assert "Could not connect to CAO server" in result.output

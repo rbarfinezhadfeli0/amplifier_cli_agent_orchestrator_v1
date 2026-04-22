@@ -21,34 +21,29 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional
 
 from cli_agent_orchestrator.clients.database import create_terminal as db_create_terminal
 from cli_agent_orchestrator.clients.database import delete_terminal as db_delete_terminal
-from cli_agent_orchestrator.clients.database import (
-    get_terminal_metadata,
-    update_last_active,
-)
+from cli_agent_orchestrator.clients.database import get_terminal_metadata
+from cli_agent_orchestrator.clients.database import update_last_active
 from cli_agent_orchestrator.clients.tmux import tmux_client
-from cli_agent_orchestrator.constants import SESSION_PREFIX, TERMINAL_LOG_DIR
+from cli_agent_orchestrator.constants import SESSION_PREFIX
+from cli_agent_orchestrator.constants import TERMINAL_LOG_DIR
 from cli_agent_orchestrator.models.inbox import OrchestrationType
 from cli_agent_orchestrator.models.provider import ProviderType
-from cli_agent_orchestrator.models.terminal import Terminal, TerminalStatus
-from cli_agent_orchestrator.plugins import (
-    PluginRegistry,
-    PostCreateTerminalEvent,
-    PostKillTerminalEvent,
-    PostSendMessageEvent,
-)
+from cli_agent_orchestrator.models.terminal import Terminal
+from cli_agent_orchestrator.models.terminal import TerminalStatus
+from cli_agent_orchestrator.plugins import PluginRegistry
+from cli_agent_orchestrator.plugins import PostCreateTerminalEvent
+from cli_agent_orchestrator.plugins import PostKillTerminalEvent
+from cli_agent_orchestrator.plugins import PostSendMessageEvent
 from cli_agent_orchestrator.providers.manager import provider_manager
 from cli_agent_orchestrator.services.plugin_dispatch import dispatch_plugin_event
 from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
 from cli_agent_orchestrator.utils.skills import build_skill_catalog
-from cli_agent_orchestrator.utils.terminal import (
-    generate_session_name,
-    generate_terminal_id,
-    generate_window_name,
-)
+from cli_agent_orchestrator.utils.terminal import generate_session_name
+from cli_agent_orchestrator.utils.terminal import generate_terminal_id
+from cli_agent_orchestrator.utils.terminal import generate_window_name
 
 logger = logging.getLogger(__name__)
 
@@ -78,10 +73,10 @@ RUNTIME_SKILL_PROMPT_PROVIDERS = {
 def create_terminal(
     provider: str,
     agent_profile: str,
-    session_name: Optional[str] = None,
+    session_name: str | None = None,
     new_session: bool = False,
-    working_directory: Optional[str] = None,
-    allowed_tools: Optional[list[str]] = None,
+    working_directory: str | None = None,
+    allowed_tools: list[str] | None = None,
     registry: PluginRegistry | None = None,
 ) -> Terminal:
     """Create a new terminal with an initialized CLI agent.
@@ -134,14 +129,10 @@ def create_terminal(
             # Add window to existing session
             if not tmux_client.session_exists(session_name):
                 raise ValueError(f"Session '{session_name}' not found")
-            window_name = tmux_client.create_window(
-                session_name, window_name, terminal_id, working_directory
-            )
+            window_name = tmux_client.create_window(session_name, window_name, terminal_id, working_directory)
 
         # Step 3: Persist terminal metadata to database
-        db_create_terminal(
-            terminal_id, session_name, window_name, provider, agent_profile, allowed_tools
-        )
+        db_create_terminal(terminal_id, session_name, window_name, provider, agent_profile, allowed_tools)
 
         # Step 3b: Load the profile once for allowed tool resolution before
         # provider initialization. The skill catalog is global and does not
@@ -157,9 +148,7 @@ def create_terminal(
             from cli_agent_orchestrator.utils.tool_mapping import resolve_allowed_tools
 
             mcp_server_names = list(profile.mcpServers.keys()) if profile.mcpServers else None
-            allowed_tools = resolve_allowed_tools(
-                profile.allowedTools, profile.role, mcp_server_names
-            )
+            allowed_tools = resolve_allowed_tools(profile.allowedTools, profile.role, mcp_server_names)
 
         # Step 4: Create and initialize the CLI provider
         # This starts the agent (e.g., runs "kiro-cli chat --agent developer")
@@ -195,9 +184,7 @@ def create_terminal(
             last_active=datetime.now(),
         )
 
-        logger.info(
-            f"Created terminal: {terminal_id} in session: {session_name} (new_session={new_session})"
-        )
+        logger.info(f"Created terminal: {terminal_id} in session: {session_name} (new_session={new_session})")
         dispatch_plugin_event(
             registry,
             "post_create_terminal",
@@ -225,7 +212,7 @@ def create_terminal(
         raise
 
 
-def get_terminal(terminal_id: str) -> Dict:
+def get_terminal(terminal_id: str) -> dict:
     """Get terminal data."""
     try:
         metadata = get_terminal_metadata(terminal_id)
@@ -254,7 +241,7 @@ def get_terminal(terminal_id: str) -> Dict:
         raise
 
 
-def get_working_directory(terminal_id: str) -> Optional[str]:
+def get_working_directory(terminal_id: str) -> str | None:
     """Get the current working directory of a terminal's pane.
 
     Args:
@@ -272,9 +259,7 @@ def get_working_directory(terminal_id: str) -> Optional[str]:
         if not metadata:
             raise ValueError(f"Terminal '{terminal_id}' not found")
 
-        working_dir = tmux_client.get_pane_working_directory(
-            metadata["tmux_session"], metadata["tmux_window"]
-        )
+        working_dir = tmux_client.get_pane_working_directory(metadata["tmux_session"], metadata["tmux_window"])
         return working_dir
 
     except Exception as e:
@@ -305,9 +290,7 @@ def send_input(
         provider = provider_manager.get_provider(terminal_id)
         enter_count = provider.paste_enter_count if provider else 1
 
-        tmux_client.send_keys(
-            metadata["tmux_session"], metadata["tmux_window"], message, enter_count=enter_count
-        )
+        tmux_client.send_keys(metadata["tmux_session"], metadata["tmux_window"], message, enter_count=enter_count)
 
         # Notify the provider that external input was received.
         # This allows providers to adjust status
@@ -386,7 +369,7 @@ def get_output(terminal_id: str, mode: OutputMode = OutputMode.FULL) -> str:
 
         if mode == OutputMode.FULL:
             return full_output
-        elif mode == OutputMode.LAST:
+        if mode == OutputMode.LAST:
             provider = provider_manager.get_provider(terminal_id)
             if provider is None:
                 raise ValueError(f"Provider not found for terminal {terminal_id}")
@@ -397,9 +380,7 @@ def get_output(terminal_id: str, mode: OutputMode = OutputMode.FULL) -> str:
                 try:
                     if attempt > 0:
                         time.sleep(10.0)
-                        full_output = tmux_client.get_history(
-                            metadata["tmux_session"], metadata["tmux_window"]
-                        )
+                        full_output = tmux_client.get_history(metadata["tmux_session"], metadata["tmux_window"])
                     return provider.extract_last_message_from_script(full_output)
                 except ValueError as exc:
                     last_err = exc

@@ -5,12 +5,10 @@ import subprocess
 import click
 import requests
 
-from cli_agent_orchestrator.constants import (
-    DATABASE_FILE,
-    SERVER_HOST,
-    SERVER_PORT,
-    SESSION_PREFIX,
-)
+from cli_agent_orchestrator.constants import DATABASE_FILE
+from cli_agent_orchestrator.constants import SERVER_HOST
+from cli_agent_orchestrator.constants import SERVER_PORT
+from cli_agent_orchestrator.constants import SESSION_PREFIX
 
 
 @click.command()
@@ -45,9 +43,7 @@ def info():
                     click.echo(f"Session ID: {session_name}")
                     click.echo(f"Active terminals: {len(terminals)}")
                 else:
-                    click.echo(
-                        f"Session ID: {session_name} (Warning: Session not found in CAO server)"
-                    )
+                    click.echo(f"Session ID: {session_name} (Warning: Session not found in CAO server)")
             except requests.exceptions.RequestException:
                 click.echo(f"Session ID: {session_name} (Warning: Could not connect to CAO server)")
         else:

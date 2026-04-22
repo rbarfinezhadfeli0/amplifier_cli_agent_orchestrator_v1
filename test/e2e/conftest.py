@@ -180,9 +180,7 @@ def get_terminal_status(terminal_id: str) -> str:
     return resp.json().get("status", "unknown")
 
 
-def wait_for_status(
-    terminal_id: str, target: str, timeout: float = 90.0, poll: float = 3.0
-) -> bool:
+def wait_for_status(terminal_id: str, target: str, timeout: float = 90.0, poll: float = 3.0) -> bool:
     """Poll terminal status until target is reached or timeout."""
     start = time.time()
     while time.time() - start < timeout:

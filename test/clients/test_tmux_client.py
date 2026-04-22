@@ -1,7 +1,8 @@
 """Tests for TmuxClient methods (mocked libtmux — no real tmux required)."""
 
 import os
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 

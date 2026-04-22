@@ -1,14 +1,12 @@
 """Tests for the session service."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.services.session_service import (
-    delete_session,
-    get_session,
-    list_sessions,
-)
+from cli_agent_orchestrator.services.session_service import delete_session
+from cli_agent_orchestrator.services.session_service import get_session
+from cli_agent_orchestrator.services.session_service import list_sessions
 
 
 class TestListSessions:
@@ -109,9 +107,7 @@ class TestDeleteSession:
     @patch("cli_agent_orchestrator.services.session_service.provider_manager")
     @patch("cli_agent_orchestrator.services.session_service.list_terminals_by_session")
     @patch("cli_agent_orchestrator.services.session_service.tmux_client")
-    def test_delete_session_success(
-        self, mock_tmux, mock_list_terminals, mock_provider_manager, mock_delete_terminals
-    ):
+    def test_delete_session_success(self, mock_tmux, mock_list_terminals, mock_provider_manager, mock_delete_terminals):
         """Test deleting session successfully."""
         mock_tmux.session_exists.return_value = True
         mock_list_terminals.return_value = [

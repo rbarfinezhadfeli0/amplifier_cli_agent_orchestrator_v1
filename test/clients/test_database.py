@@ -1,37 +1,29 @@
 """Tests for the database client."""
 
-import tempfile
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cli_agent_orchestrator.clients.database import (
-    Base,
-    FlowModel,
-    InboxModel,
-    TerminalModel,
-    create_flow,
-    create_inbox_message,
-    create_terminal,
-    delete_flow,
-    delete_terminal,
-    delete_terminals_by_session,
-    get_flow,
-    get_inbox_messages,
-    get_pending_messages,
-    get_terminal_metadata,
-    init_db,
-    list_flows,
-    list_terminals_by_session,
-    update_flow_enabled,
-    update_flow_run_times,
-    update_last_active,
-    update_message_status,
-)
+from cli_agent_orchestrator.clients.database import Base
+from cli_agent_orchestrator.clients.database import create_flow
+from cli_agent_orchestrator.clients.database import create_inbox_message
+from cli_agent_orchestrator.clients.database import create_terminal
+from cli_agent_orchestrator.clients.database import delete_flow
+from cli_agent_orchestrator.clients.database import delete_terminal
+from cli_agent_orchestrator.clients.database import delete_terminals_by_session
+from cli_agent_orchestrator.clients.database import get_flow
+from cli_agent_orchestrator.clients.database import get_terminal_metadata
+from cli_agent_orchestrator.clients.database import init_db
+from cli_agent_orchestrator.clients.database import list_flows
+from cli_agent_orchestrator.clients.database import list_terminals_by_session
+from cli_agent_orchestrator.clients.database import update_flow_enabled
+from cli_agent_orchestrator.clients.database import update_flow_run_times
+from cli_agent_orchestrator.clients.database import update_last_active
+from cli_agent_orchestrator.clients.database import update_message_status
 from cli_agent_orchestrator.models.inbox import MessageStatus
 
 
@@ -342,8 +334,6 @@ class TestFlowOperations:
             flow.enabled = True
 
         mock_session.refresh.side_effect = mock_refresh
-
-        from cli_agent_orchestrator.clients.database import get_flows_to_run
 
         next_run = datetime.now()
         result = create_flow(

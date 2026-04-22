@@ -1,26 +1,20 @@
 """Smoke tests for the public CAO plugin package API."""
 
-from cli_agent_orchestrator.plugins import (
-    CaoEvent,
-    CaoPlugin,
-    PluginRegistry,
-    PostCreateSessionEvent,
-    PostCreateTerminalEvent,
-    PostKillSessionEvent,
-    PostKillTerminalEvent,
-    PostSendMessageEvent,
-    __all__,
-    hook,
-)
+from cli_agent_orchestrator.plugins import CaoEvent
+from cli_agent_orchestrator.plugins import CaoPlugin
+from cli_agent_orchestrator.plugins import PluginRegistry
+from cli_agent_orchestrator.plugins import PostCreateSessionEvent
+from cli_agent_orchestrator.plugins import PostCreateTerminalEvent
+from cli_agent_orchestrator.plugins import PostKillSessionEvent
+from cli_agent_orchestrator.plugins import PostKillTerminalEvent
+from cli_agent_orchestrator.plugins import PostSendMessageEvent
+from cli_agent_orchestrator.plugins import __all__
+from cli_agent_orchestrator.plugins import hook
 from cli_agent_orchestrator.plugins.base import CaoPlugin as BaseCaoPlugin
 from cli_agent_orchestrator.plugins.base import hook as base_hook
 from cli_agent_orchestrator.plugins.events import CaoEvent as BaseCaoEvent
-from cli_agent_orchestrator.plugins.events import (
-    PostCreateSessionEvent as BasePostCreateSessionEvent,
-)
-from cli_agent_orchestrator.plugins.events import (
-    PostCreateTerminalEvent as BasePostCreateTerminalEvent,
-)
+from cli_agent_orchestrator.plugins.events import PostCreateSessionEvent as BasePostCreateSessionEvent
+from cli_agent_orchestrator.plugins.events import PostCreateTerminalEvent as BasePostCreateTerminalEvent
 from cli_agent_orchestrator.plugins.events import PostKillSessionEvent as BasePostKillSessionEvent
 from cli_agent_orchestrator.plugins.events import PostKillTerminalEvent as BasePostKillTerminalEvent
 from cli_agent_orchestrator.plugins.events import PostSendMessageEvent as BasePostSendMessageEvent

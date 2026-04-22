@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -15,7 +15,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def load_fixture(filename: str) -> str:
     """Load a fixture file and return its contents."""
-    with open(FIXTURES_DIR / filename, "r") as f:
+    with open(FIXTURES_DIR / filename) as f:
         return f.read()
 
 
@@ -35,9 +35,7 @@ class TestKiroCliProviderInitialization:
 
         assert result is True
         mock_wait_shell.assert_called_once()
-        mock_tmux.send_keys.assert_called_once_with(
-            "test-session", "window-0", "kiro-cli chat --agent developer"
-        )
+        mock_tmux.send_keys.assert_called_once_with("test-session", "window-0", "kiro-cli chat --agent developer")
         mock_wait_status.assert_called_once()
 
     @patch("cli_agent_orchestrator.providers.kiro_cli.wait_for_shell")
@@ -463,9 +461,7 @@ class TestKiroCliProviderRegexPatterns:
         # Should match with various trailing text
         assert re.search(provider._idle_prompt_pattern, "[developer]> How can I help?")
         assert re.search(provider._idle_prompt_pattern, "[developer] 16% λ > How can I help?")
-        assert re.search(
-            provider._idle_prompt_pattern, "[developer]> What would you like to do next?"
-        )
+        assert re.search(provider._idle_prompt_pattern, "[developer]> What would you like to do next?")
         assert re.search(provider._idle_prompt_pattern, "[developer] 5% > Ready for next task")
 
     def test_permission_prompt_pattern(self):
@@ -482,9 +478,7 @@ class TestKiroCliProviderRegexPatterns:
         The regex matches all [y/n/t]: occurrences; get_status() uses
         line-based counting to distinguish active from stale prompts.
         """
-        stale = (
-            "Allow this action? [y/n/t]:\n\n[developer] 29% > y\nsome output\n[developer] 29% > "
-        )
+        stale = "Allow this action? [y/n/t]:\n\n[developer] 29% > y\nsome output\n[developer] 29% > "
         mock_tmux.get_history.return_value = stale
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
@@ -648,10 +642,8 @@ class TestKiroCliProviderEdgeCases:
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
         pattern = provider.get_idle_pattern_for_log()
 
-        from cli_agent_orchestrator.providers.kiro_cli import (
-            IDLE_PROMPT_PATTERN_LOG,
-            NEW_TUI_IDLE_PATTERN_LOG,
-        )
+        from cli_agent_orchestrator.providers.kiro_cli import IDLE_PROMPT_PATTERN_LOG
+        from cli_agent_orchestrator.providers.kiro_cli import NEW_TUI_IDLE_PATTERN_LOG
 
         # Pattern should match both old and new TUI formats
         assert IDLE_PROMPT_PATTERN_LOG in pattern
@@ -681,8 +673,7 @@ class TestKiroCliProviderEdgeCases:
     def test_output_with_unicode_characters(self, mock_tmux):
         """Test handling of unicode characters in output."""
         mock_tmux.get_history.return_value = (
-            "\x1b[38;5;10m> \x1b[39mResponse with unicode: 日本語 café naïve 🚀\n"
-            "\x1b[36m[developer]\x1b[35m>\x1b[39m"
+            "\x1b[38;5;10m> \x1b[39mResponse with unicode: 日本語 café naïve 🚀\n\x1b[36m[developer]\x1b[35m>\x1b[39m"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
@@ -700,8 +691,7 @@ class TestKiroCliProviderEdgeCases:
     def test_output_with_control_characters(self, mock_tmux):
         """Test handling of control characters."""
         mock_tmux.get_history.return_value = (
-            "\x1b[38;5;10m> \x1b[39mResponse\x07with\x1bcontrol\x00chars\n"
-            "\x1b[36m[developer]\x1b[35m>\x1b[39m"
+            "\x1b[38;5;10m> \x1b[39mResponse\x07with\x1bcontrol\x00chars\n\x1b[36m[developer]\x1b[35m>\x1b[39m"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
@@ -759,7 +749,7 @@ class TestKiroCliNewTuiSupport:
     def test_new_tui_idle_detection(self, mock_tmux):
         """Test IDLE detection with new TUI prompt format."""
         mock_tmux.get_history.return_value = (
-            "code_supervisor · claude-opus-4.6-1m · ◔ 1%\n" " ask a question, or describe a task ↵"
+            "code_supervisor · claude-opus-4.6-1m · ◔ 1%\n ask a question, or describe a task ↵"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "code_supervisor")
@@ -785,9 +775,7 @@ class TestKiroCliNewTuiSupport:
     @patch("cli_agent_orchestrator.providers.kiro_cli.tmux_client")
     def test_new_tui_processing_detection(self, mock_tmux):
         """Test PROCESSING when new TUI idle prompt is absent."""
-        mock_tmux.get_history.return_value = (
-            "code_supervisor · claude-opus-4.6-1m · ◔ 1%\n" "Generating response..."
-        )
+        mock_tmux.get_history.return_value = "code_supervisor · claude-opus-4.6-1m · ◔ 1%\nGenerating response..."
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "code_supervisor")
         status = provider.get_status()
@@ -935,10 +923,7 @@ class TestKiroCliTuiMode:
     def test_tui_extraction_no_separator(self, mock_tmux):
         """Test extraction fails when Credits present but no separator."""
         output = (
-            "Some content\n"
-            "▸ Credits: 0.24 • Time: 3s\n"
-            "developer · auto · ◔ 3%\n"
-            " Ask a question or describe a task ↵"
+            "Some content\n▸ Credits: 0.24 • Time: 3s\ndeveloper · auto · ◔ 3%\n Ask a question or describe a task ↵"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
@@ -985,9 +970,7 @@ class TestKiroCliTuiMode:
         """Test TUI separator pattern matches expected formats."""
         from cli_agent_orchestrator.providers.kiro_cli import TUI_SEPARATOR_PATTERN
 
-        assert re.search(
-            TUI_SEPARATOR_PATTERN, "────────────────────────────────────────────────────"
-        )
+        assert re.search(TUI_SEPARATOR_PATTERN, "────────────────────────────────────────────────────")
         assert re.search(TUI_SEPARATOR_PATTERN, "──────────────────────")  # 21 chars
         assert not re.search(TUI_SEPARATOR_PATTERN, "──────")  # Too short (< 20)
         assert not re.search(TUI_SEPARATOR_PATTERN, "───")  # Way too short
@@ -1053,9 +1036,7 @@ class TestKiroCliTuiMode:
         has no idle prompt after it, so the result must be PROCESSING.
         """
         mock_tmux.get_history.return_value = (
-            "developer · auto · ◔ 3%\n"
-            " Ask a question or describe a task ↵\n"
-            " Kiro is working\n"
+            "developer · auto · ◔ 3%\n Ask a question or describe a task ↵\n Kiro is working\n"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")
@@ -1116,10 +1097,7 @@ class TestKiroCliTuiMode:
         """Test that multiple stale 'Kiro is working' lines all before the idle
         prompt still resolve to IDLE (uses the *last* working-line position)."""
         mock_tmux.get_history.return_value = (
-            " Kiro is working\n"
-            " Kiro is working\n"
-            "developer · auto · ◔ 0%\n"
-            " Ask a question or describe a task ↵\n"
+            " Kiro is working\n Kiro is working\ndeveloper · auto · ◔ 0%\n Ask a question or describe a task ↵\n"
         )
 
         provider = KiroCliProvider("test1234", "test-session", "window-0", "developer")

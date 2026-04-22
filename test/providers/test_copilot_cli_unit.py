@@ -14,9 +14,7 @@ from cli_agent_orchestrator.providers.copilot_cli import CopilotCliProvider
 
 class TestCopilotCliProviderCommand:
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_builds_default(self, mock_tmux, mock_build_mcp, mock_supports_flag):
@@ -39,9 +37,7 @@ class TestCopilotCliProviderCommand:
         mock_build_mcp.assert_called_once_with()
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_does_not_use_model_env(self, mock_tmux, mock_build_mcp, mock_supports_flag):
@@ -63,9 +59,7 @@ class TestCopilotCliProviderCommand:
         mock_build_mcp.assert_called_once_with()
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_passes_agent_name_directly(
@@ -78,16 +72,12 @@ class TestCopilotCliProviderCommand:
         mock_build_mcp.return_value = '{"mcpServers":{"cao-mcp-server":{"command":"x"}}}'
         mock_tmux.get_pane_working_directory.return_value = "/tmp/project"
 
-        provider = CopilotCliProvider(
-            "test1234", "test-session", "window-0", agent_profile="repo-agent"
-        )
+        provider = CopilotCliProvider("test1234", "test-session", "window-0", agent_profile="repo-agent")
         parts = shlex.split(provider._command())
         assert parts[parts.index("--agent") + 1] == "repo-agent"
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_skips_mcp_flag_if_unsupported(
@@ -104,9 +94,7 @@ class TestCopilotCliProviderCommand:
         mock_build_mcp.assert_not_called()
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_falls_back_to_process_cwd_when_pane_dir_missing(
@@ -135,9 +123,7 @@ class TestCopilotCliProviderModelFlag:
     """
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_appends_model_when_set(self, mock_tmux, mock_build_mcp, mock_supports_flag):
@@ -158,9 +144,7 @@ class TestCopilotCliProviderModelFlag:
         assert parts[parts.index("--model") + 1] == "claude-sonnet-4.5"
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
     def test_command_omits_model_when_unset(self, mock_tmux, mock_build_mcp, mock_supports_flag):
@@ -168,31 +152,23 @@ class TestCopilotCliProviderModelFlag:
         mock_build_mcp.return_value = '{"mcpServers":{"cao-mcp-server":{"command":"x"}}}'
         mock_tmux.get_pane_working_directory.return_value = "/tmp/project"
 
-        provider = CopilotCliProvider(
-            "test1234", "test-session", "window-0", agent_profile="repo-agent"
-        )
+        provider = CopilotCliProvider("test1234", "test-session", "window-0", agent_profile="repo-agent")
         parts = shlex.split(provider._command())
 
         assert "--model" not in parts
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._supports_flag")
-    @patch(
-        "cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config"
-    )
+    @patch("cli_agent_orchestrator.providers.copilot_cli.CopilotCliProvider._build_runtime_mcp_config")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
     @patch.dict("os.environ", {}, clear=True)
-    def test_command_omits_model_when_no_agent_profile(
-        self, mock_tmux, mock_build_mcp, mock_supports_flag
-    ):
+    def test_command_omits_model_when_no_agent_profile(self, mock_tmux, mock_build_mcp, mock_supports_flag):
         # --model is only meaningful alongside --agent; without an agent
         # profile the flag is not emitted even if a model is passed.
         mock_supports_flag.return_value = True
         mock_build_mcp.return_value = '{"mcpServers":{"cao-mcp-server":{"command":"x"}}}'
         mock_tmux.get_pane_working_directory.return_value = "/tmp/project"
 
-        provider = CopilotCliProvider(
-            "test1234", "test-session", "window-0", model="claude-sonnet-4.5"
-        )
+        provider = CopilotCliProvider("test1234", "test-session", "window-0", model="claude-sonnet-4.5")
         parts = shlex.split(provider._command())
 
         assert "--model" not in parts
@@ -300,9 +276,7 @@ class TestCopilotCliProviderTrustPrompts:
     @patch("cli_agent_orchestrator.providers.copilot_cli.logger")
     @patch("cli_agent_orchestrator.providers.copilot_cli.time.sleep")
     @patch("cli_agent_orchestrator.providers.copilot_cli.time.time")
-    def test_accept_trust_prompts_logs_warning_on_timeout(
-        self, mock_time, _mock_sleep, mock_logger
-    ):
+    def test_accept_trust_prompts_logs_warning_on_timeout(self, mock_time, _mock_sleep, mock_logger):
         provider = CopilotCliProvider("test1234", "test-session", "window-0")
         mock_time.side_effect = [0.0, 0.0, 3.0]
 
@@ -317,9 +291,7 @@ class TestCopilotCliProviderTrustPrompts:
 
     @patch("cli_agent_orchestrator.providers.copilot_cli.time.sleep")
     @patch("cli_agent_orchestrator.providers.copilot_cli.tmux_client")
-    def test_accept_trust_prompts_answers_yes_for_spaced_yes_no_prompt(
-        self, mock_tmux, _mock_sleep
-    ):
+    def test_accept_trust_prompts_answers_yes_for_spaced_yes_no_prompt(self, mock_tmux, _mock_sleep):
         provider = CopilotCliProvider("test1234", "test-session", "window-0")
 
         with (

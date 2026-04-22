@@ -6,16 +6,15 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from cli_agent_orchestrator.cli.commands.init import init, seed_default_skills
+from cli_agent_orchestrator.cli.commands.init import init
+from cli_agent_orchestrator.cli.commands.init import seed_default_skills
 
 
 def _create_bundled_skill(root: Path, name: str, description: str) -> None:
     """Create a bundled default skill for init seeding tests."""
     skill_dir = root / name
     skill_dir.mkdir(parents=True, exist_ok=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\n" f"name: {name}\n" f"description: {description}\n" "---\n\n" "# Bundled Skill\n"
-    )
+    (skill_dir / "SKILL.md").write_text(f"---\nname: {name}\ndescription: {description}\n---\n\n# Bundled Skill\n")
     (skill_dir / "extra.txt").write_text("extra")
 
 
@@ -67,9 +66,7 @@ class TestInitCommand:
 class TestSeedDefaultSkills:
     """Tests for default skill seeding during init."""
 
-    def test_seed_default_skills_creates_store_and_copies_bundled_skills(
-        self, tmp_path, monkeypatch
-    ):
+    def test_seed_default_skills_creates_store_and_copies_bundled_skills(self, tmp_path, monkeypatch):
         """Bundled skills should be copied into the local skill store."""
         bundled_root = tmp_path / "bundled"
         _create_bundled_skill(bundled_root, "alpha", "Alpha skill")
@@ -77,9 +74,7 @@ class TestSeedDefaultSkills:
 
         skill_store = tmp_path / "skill-store"
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root)
 
         seeded_count = seed_default_skills()
 
@@ -100,9 +95,7 @@ class TestSeedDefaultSkills:
         (existing_dir / "custom.txt").write_text("keep me")
 
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root)
 
         seeded_count = seed_default_skills()
 
@@ -117,9 +110,7 @@ class TestSeedDefaultSkills:
 
         skill_store = tmp_path / "skill-store"
         monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.SKILLS_DIR", skill_store)
-        monkeypatch.setattr(
-            "cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root
-        )
+        monkeypatch.setattr("cli_agent_orchestrator.cli.commands.init.resources.files", lambda _: bundled_root)
 
         first_seed_count = seed_default_skills()
 

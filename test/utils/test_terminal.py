@@ -1,18 +1,15 @@
 """Tests for terminal utilities."""
 
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.utils.terminal import (
-    generate_session_name,
-    generate_terminal_id,
-    generate_window_name,
-    wait_for_shell,
-    wait_until_status,
-    wait_until_terminal_status,
-)
+from cli_agent_orchestrator.utils.terminal import generate_session_name
+from cli_agent_orchestrator.utils.terminal import generate_terminal_id
+from cli_agent_orchestrator.utils.terminal import generate_window_name
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
+from cli_agent_orchestrator.utils.terminal import wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_until_terminal_status
 
 
 class TestGenerateFunctions:
@@ -66,9 +63,7 @@ class TestWaitForShell:
         # Return same output twice to indicate shell is ready
         mock_tmux.get_history.side_effect = ["prompt $", "prompt $"]
 
-        result = wait_for_shell(
-            mock_tmux, "test-session", "window-0", timeout=2.0, polling_interval=0.1
-        )
+        result = wait_for_shell(mock_tmux, "test-session", "window-0", timeout=2.0, polling_interval=0.1)
 
         assert result is True
 
@@ -84,9 +79,7 @@ class TestWaitForShell:
 
         mock_tmux.get_history.side_effect = get_history_side_effect
 
-        result = wait_for_shell(
-            mock_tmux, "test-session", "window-0", timeout=0.5, polling_interval=0.1
-        )
+        result = wait_for_shell(mock_tmux, "test-session", "window-0", timeout=0.5, polling_interval=0.1)
 
         assert result is False
 
@@ -95,9 +88,7 @@ class TestWaitForShell:
         mock_tmux = MagicMock()
         mock_tmux.get_history.return_value = ""
 
-        result = wait_for_shell(
-            mock_tmux, "test-session", "window-0", timeout=0.5, polling_interval=0.1
-        )
+        result = wait_for_shell(mock_tmux, "test-session", "window-0", timeout=0.5, polling_interval=0.1)
 
         assert result is False
 
@@ -110,9 +101,7 @@ class TestWaitUntilStatus:
         mock_provider = MagicMock()
         mock_provider.get_status.return_value = TerminalStatus.IDLE
 
-        result = wait_until_status(
-            mock_provider, TerminalStatus.IDLE, timeout=1.0, polling_interval=0.1
-        )
+        result = wait_until_status(mock_provider, TerminalStatus.IDLE, timeout=1.0, polling_interval=0.1)
 
         assert result is True
 
@@ -121,9 +110,7 @@ class TestWaitUntilStatus:
         mock_provider = MagicMock()
         mock_provider.get_status.return_value = TerminalStatus.PROCESSING
 
-        result = wait_until_status(
-            mock_provider, TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1
-        )
+        result = wait_until_status(mock_provider, TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1)
 
         assert result is False
 
@@ -151,9 +138,7 @@ class TestWaitUntilStatus:
             TerminalStatus.IDLE,
         ]
 
-        result = wait_until_status(
-            mock_provider, TerminalStatus.IDLE, timeout=2.0, polling_interval=0.1
-        )
+        result = wait_until_status(mock_provider, TerminalStatus.IDLE, timeout=2.0, polling_interval=0.1)
 
         assert result is True
 
@@ -169,9 +154,7 @@ class TestWaitUntilTerminalStatus:
         mock_response.json.return_value = {"status": TerminalStatus.IDLE.value}
         mock_get.return_value = mock_response
 
-        result = wait_until_terminal_status(
-            "test-terminal", TerminalStatus.IDLE, timeout=1.0, polling_interval=0.1
-        )
+        result = wait_until_terminal_status("test-terminal", TerminalStatus.IDLE, timeout=1.0, polling_interval=0.1)
 
         assert result is True
 
@@ -183,9 +166,7 @@ class TestWaitUntilTerminalStatus:
         mock_response.json.return_value = {"status": "PROCESSING"}
         mock_get.return_value = mock_response
 
-        result = wait_until_terminal_status(
-            "test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1
-        )
+        result = wait_until_terminal_status("test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1)
 
         assert result is False
 
@@ -194,9 +175,7 @@ class TestWaitUntilTerminalStatus:
         """Test terminal status wait with API error."""
         mock_get.side_effect = Exception("Connection error")
 
-        result = wait_until_terminal_status(
-            "test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1
-        )
+        result = wait_until_terminal_status("test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1)
 
         assert result is False
 
@@ -207,9 +186,7 @@ class TestWaitUntilTerminalStatus:
         mock_response.status_code = 404
         mock_get.return_value = mock_response
 
-        result = wait_until_terminal_status(
-            "test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1
-        )
+        result = wait_until_terminal_status("test-terminal", TerminalStatus.IDLE, timeout=0.5, polling_interval=0.1)
 
         assert result is False
 

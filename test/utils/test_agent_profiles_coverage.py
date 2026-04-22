@@ -6,11 +6,10 @@ and list_agent_profiles with frontmatter parse errors.
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
-
-from cli_agent_orchestrator.models.agent_profile import AgentProfile
 
 
 class TestScanDirectory:
@@ -132,9 +131,7 @@ class TestLoadAgentProfileFromProviderDirs:
     @patch("cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", return_value=[])
     @patch("cli_agent_orchestrator.services.settings_service.get_agent_dirs")
     @patch("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR")
-    def test_load_from_provider_directory_style(
-        self, mock_local, mock_get_dirs, mock_extra, tmp_path
-    ):
+    def test_load_from_provider_directory_style(self, mock_local, mock_get_dirs, mock_extra, tmp_path):
         from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
 
         mock_local_path = MagicMock(spec=Path)
@@ -173,9 +170,7 @@ class TestLoadAgentProfileFromProviderDirs:
     @patch("cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs")
     @patch("cli_agent_orchestrator.services.settings_service.get_agent_dirs", return_value={})
     @patch("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR")
-    def test_load_from_extra_dirs_directory_style(
-        self, mock_local, mock_get_dirs, mock_extra, tmp_path
-    ):
+    def test_load_from_extra_dirs_directory_style(self, mock_local, mock_get_dirs, mock_extra, tmp_path):
         from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
 
         mock_local_path = MagicMock(spec=Path)
@@ -214,9 +209,7 @@ class TestLoadAgentProfileFromProviderDirs:
     @patch("cli_agent_orchestrator.services.settings_service.get_extra_agent_dirs", return_value=[])
     @patch("cli_agent_orchestrator.services.settings_service.get_agent_dirs", return_value={})
     @patch("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR")
-    def test_builtin_fills_missing_name_and_description(
-        self, mock_local, mock_get_dirs, mock_extra, mock_resources
-    ):
+    def test_builtin_fills_missing_name_and_description(self, mock_local, mock_get_dirs, mock_extra, mock_resources):
         from cli_agent_orchestrator.utils.agent_profiles import load_agent_profile
 
         mock_local_path = MagicMock(spec=Path)
@@ -321,9 +314,7 @@ class TestListAgentProfilesEdgeCases:
     @patch("cli_agent_orchestrator.utils.agent_profiles._scan_directory")
     @patch("cli_agent_orchestrator.utils.agent_profiles.LOCAL_AGENT_STORE_DIR")
     @patch("cli_agent_orchestrator.utils.agent_profiles.resources")
-    def test_extra_dirs_scanned(
-        self, mock_resources, mock_local_dir, mock_scan, mock_get_dirs, mock_get_extra
-    ):
+    def test_extra_dirs_scanned(self, mock_resources, mock_local_dir, mock_scan, mock_get_dirs, mock_get_extra):
         """Extra user directories should be scanned with 'custom' label."""
         from cli_agent_orchestrator.utils.agent_profiles import list_agent_profiles
 

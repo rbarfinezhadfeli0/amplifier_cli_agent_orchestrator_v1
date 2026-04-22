@@ -1,11 +1,11 @@
 """Tests for terminal-related API endpoints including working directory and exit."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
-from fastapi.testclient import TestClient
 
-from cli_agent_orchestrator.api.main import app
 from cli_agent_orchestrator.models.terminal import Terminal
 
 
@@ -346,9 +346,7 @@ class TestCreateInboxMessageEndpoint:
                 "abcd1234",
                 "hello",
             )
-            mock_inbox.check_and_send_pending_messages.assert_called_once_with(
-                "abcd1234", registry=ANY
-            )
+            mock_inbox.check_and_send_pending_messages.assert_called_once_with("abcd1234", registry=ANY)
 
     def test_create_inbox_message_delivery_failure_still_succeeds(self, client):
         """Immediate delivery failure should not fail the API response."""
@@ -405,9 +403,8 @@ class TestWebSocketLocalhostRestriction:
     def test_websocket_rejects_non_loopback(self, client):
         """WebSocket should close with 4003 for non-localhost clients."""
         # TestClient uses "testclient" as host, which is not in the allowlist
-        with pytest.raises(Exception):
-            with client.websocket_connect("/terminals/abcd1234/ws"):
-                pass
+        with pytest.raises(Exception), client.websocket_connect("/terminals/abcd1234/ws"):
+            pass
 
 
 class TestCrossProviderResolution:

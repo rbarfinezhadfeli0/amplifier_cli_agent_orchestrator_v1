@@ -1,8 +1,7 @@
 """MCP server models."""
 
-from typing import Optional
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic import Field
 
 
 class HandoffResult(BaseModel):
@@ -10,5 +9,5 @@ class HandoffResult(BaseModel):
 
     success: bool = Field(description="Whether the handoff was successful")
     message: str = Field(description="A message describing the result of the handoff")
-    output: Optional[str] = Field(None, description="The output from the target agent")
-    terminal_id: Optional[str] = Field(None, description="The terminal ID used for the handoff")
+    output: str | None = Field(None, description="The output from the target agent")
+    terminal_id: str | None = Field(None, description="The terminal ID used for the handoff")

@@ -5,7 +5,8 @@ import inspect
 import logging
 from typing import Any
 
-from cli_agent_orchestrator.plugins.base import _HOOK_EVENT_ATTR, CaoPlugin
+from cli_agent_orchestrator.plugins.base import _HOOK_EVENT_ATTR
+from cli_agent_orchestrator.plugins.base import CaoPlugin
 from cli_agent_orchestrator.plugins.events import CaoEvent
 
 logger = logging.getLogger(__name__)

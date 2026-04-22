@@ -1,10 +1,10 @@
 """Template variable replacement utility."""
 
 import re
-from typing import Any, Dict
+from typing import Any
 
 
-def render_template(template: str, variables: Dict[str, Any]) -> str:
+def render_template(template: str, variables: dict[str, Any]) -> str:
     """Replace [[key]] with values from variables dict.
 
     Args:

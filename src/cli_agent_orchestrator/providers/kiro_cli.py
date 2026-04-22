@@ -20,12 +20,12 @@ The provider detects the following terminal states:
 import logging
 import re
 import shlex
-from typing import Optional
 
 from cli_agent_orchestrator.clients.tmux import tmux_client
 from cli_agent_orchestrator.models.terminal import TerminalStatus
 from cli_agent_orchestrator.providers.base import BaseProvider
-from cli_agent_orchestrator.utils.terminal import wait_for_shell, wait_until_status
+from cli_agent_orchestrator.utils.terminal import wait_for_shell
+from cli_agent_orchestrator.utils.terminal import wait_until_status
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class KiroCliProvider(BaseProvider):
         session_name: str,
         window_name: str,
         agent_profile: str,
-        allowed_tools: Optional[list] = None,
+        allowed_tools: list | None = None,
     ):
         """Initialize Kiro CLI provider with terminal context.
 
@@ -128,9 +128,7 @@ class KiroCliProvider(BaseProvider):
         # - [developer] 50% >   (prompt with progress indicator)
         # - [developer] λ >     (prompt with lambda symbol)
         # - [developer] 50% λ > (combined progress and lambda)
-        self._idle_prompt_pattern = (
-            rf"\[{re.escape(self._agent_profile)}\]\s*(?:\d+%\s*)?(?:\u03bb\s*)?!?>\s*"
-        )
+        self._idle_prompt_pattern = rf"\[{re.escape(self._agent_profile)}\]\s*(?:\d+%\s*)?(?:\u03bb\s*)?!?>\s*"
         self._permission_prompt_pattern = r"Allow this action\?.*?\[.*?y.*?/.*?n.*?/.*?t.*?\]:"
 
         # New TUI header pattern: "agent_name · model · ◔ N%"
@@ -164,28 +162,22 @@ class KiroCliProvider(BaseProvider):
         # Step 3: Wait for Kiro CLI to fully initialize and show the agent prompt.
         # Accept both IDLE and COMPLETED — some CLI versions show a startup
         # message that get_status() interprets as a completed response.
-        if not wait_until_status(
-            self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0
-        ):
+        if not wait_until_status(self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0):
             # TUI mode failed — fall back to --legacy-ui
             logger.warning("Kiro CLI TUI initialization timed out, retrying with --legacy-ui")
             # Exit the current session and start fresh with --legacy-ui
             tmux_client.send_keys(self.session_name, self.window_name, "/exit")
             if not wait_for_shell(tmux_client, self.session_name, self.window_name, timeout=10.0):
                 raise TimeoutError("Shell recovery timed out after --legacy-ui fallback")
-            legacy_command = shlex.join(
-                ["kiro-cli", "chat", "--legacy-ui", "--agent", self._agent_profile]
-            )
+            legacy_command = shlex.join(["kiro-cli", "chat", "--legacy-ui", "--agent", self._agent_profile])
             tmux_client.send_keys(self.session_name, self.window_name, legacy_command)
-            if not wait_until_status(
-                self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0
-            ):
+            if not wait_until_status(self, {TerminalStatus.IDLE, TerminalStatus.COMPLETED}, timeout=30.0):
                 raise TimeoutError("Kiro CLI initialization timed out with TUI and `--legacy-ui`")
 
         self._initialized = True
         return True
 
-    def get_status(self, tail_lines: Optional[int] = None) -> TerminalStatus:
+    def get_status(self, tail_lines: int | None = None) -> TerminalStatus:
         """Get Kiro CLI status by analyzing terminal output.
 
         Status detection logic (in priority order):
@@ -229,9 +221,7 @@ class KiroCliProvider(BaseProvider):
         tui_working_matches = list(re.finditer(TUI_PROCESSING_PATTERN, clean_output))
         if tui_working_matches:
             last_working_pos = tui_working_matches[-1].end()
-            idle_after_working = any(
-                m.start() > last_working_pos for m in new_tui_idle_matches + old_idle_matches
-            )
+            idle_after_working = any(m.start() > last_working_pos for m in new_tui_idle_matches + old_idle_matches)
             if not idle_after_working:
                 return TerminalStatus.PROCESSING
 
@@ -258,8 +248,7 @@ class KiroCliProvider(BaseProvider):
             idle_lines = sum(
                 1
                 for line in lines_after
-                if re.search(self._idle_prompt_pattern, line)
-                or re.search(NEW_TUI_IDLE_PATTERN, line)
+                if re.search(self._idle_prompt_pattern, line) or re.search(NEW_TUI_IDLE_PATTERN, line)
             )
             if idle_lines <= 1:
                 return TerminalStatus.WAITING_USER_ANSWER
@@ -274,7 +263,7 @@ class KiroCliProvider(BaseProvider):
 
             for prompt in idle_prompts:
                 if prompt.start() > last_arrow_pos:
-                    logger.debug(f"get_status: returning COMPLETED")
+                    logger.debug("get_status: returning COMPLETED")
                     return TerminalStatus.COMPLETED
 
             # Also check new TUI idle pattern after the last green arrow
@@ -335,9 +324,7 @@ class KiroCliProvider(BaseProvider):
                     break
 
         if not final_prompt:
-            raise ValueError(
-                "Incomplete Kiro CLI response - no final prompt detected after response"
-            )
+            raise ValueError("Incomplete Kiro CLI response - no final prompt detected after response")
 
         # Extract directly from clean output
         start_pos = last_arrow_pos
@@ -386,9 +373,7 @@ class KiroCliProvider(BaseProvider):
                 break
 
         if credits_idx is None:
-            raise ValueError(
-                "No Kiro CLI response found - no Credits marker or green arrow detected"
-            )
+            raise ValueError("No Kiro CLI response found - no Credits marker or green arrow detected")
 
         # Find the previous Credits line (prior turn's end) to establish search boundary.
         # This ensures we find the outer TUI separator, not one inside the agent's output.

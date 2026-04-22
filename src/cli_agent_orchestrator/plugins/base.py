@@ -4,7 +4,10 @@ This module defines the marker base class plugin authors subclass and the
 decorator used to associate async plugin methods with CAO event types.
 """
 
-from typing import Awaitable, Callable, ParamSpec, TypeVar
+from collections.abc import Awaitable
+from collections.abc import Callable
+from typing import ParamSpec
+from typing import TypeVar
 
 P = ParamSpec("P")
 R = TypeVar("R")

@@ -3,14 +3,13 @@
 import asyncio
 import logging
 
-from cli_agent_orchestrator.plugins import CaoEvent, PluginRegistry
+from cli_agent_orchestrator.plugins import CaoEvent
+from cli_agent_orchestrator.plugins import PluginRegistry
 
 logger = logging.getLogger(__name__)
 
 
-async def _dispatch_with_logging(
-    registry: PluginRegistry, event_type: str, event: CaoEvent
-) -> None:
+async def _dispatch_with_logging(registry: PluginRegistry, event_type: str, event: CaoEvent) -> None:
     """Run registry dispatch with local error isolation at the adapter boundary."""
 
     try:
@@ -19,9 +18,7 @@ async def _dispatch_with_logging(
         logger.warning("Plugin event dispatch failed for %s", event_type, exc_info=True)
 
 
-def dispatch_plugin_event(
-    registry: PluginRegistry | None, event_type: str, event: CaoEvent
-) -> None:
+def dispatch_plugin_event(registry: PluginRegistry | None, event_type: str, event: CaoEvent) -> None:
     """Dispatch a plugin event without forcing a broad async refactor.
 
     If called inside a running event loop (the common FastAPI path), the

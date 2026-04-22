@@ -1,6 +1,7 @@
 """Tests for TmuxClient.send_keys paste-buffer implementation."""
 
-from unittest.mock import call, patch
+from unittest.mock import call
+from unittest.mock import patch
 
 import pytest
 

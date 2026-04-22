@@ -17,17 +17,15 @@ import os
 import subprocess
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    get_terminal_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.cli.commands.init import seed_default_skills
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import cleanup_terminal
+from test.e2e.conftest import create_terminal
+from test.e2e.conftest import get_terminal_status
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -202,9 +200,9 @@ class TestSkillApi:
         data = resp.json()
         assert data["name"] == "cao-worker-protocols"
         # The skill body should contain content about worker protocols
-        assert (
-            "send_message" in data["content"]
-        ), f"Skill content should mention send_message. Got: {data['content'][:200]}"
+        assert "send_message" in data["content"], (
+            f"Skill content should mention send_message. Got: {data['content'][:200]}"
+        )
 
     def test_get_skill_missing_returns_404(self):
         """GET /skills/{name} returns 404 for a nonexistent skill."""

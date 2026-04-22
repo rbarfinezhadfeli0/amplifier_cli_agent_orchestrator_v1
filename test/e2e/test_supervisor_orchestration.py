@@ -30,17 +30,14 @@ Run:
 import re
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    extract_output,
-    get_terminal_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import create_terminal
+from test.e2e.conftest import extract_output
+from test.e2e.conftest import get_terminal_status
 
 
 def _get_full_output(terminal_id: str) -> str:
@@ -171,17 +168,15 @@ def _run_supervisor_handoff_test(provider: str):
 
     try:
         # Step 1: Create supervisor terminal
-        supervisor_id, actual_session = create_terminal(
-            provider, "analysis_supervisor", session_name
-        )
+        supervisor_id, actual_session = create_terminal(provider, "analysis_supervisor", session_name)
         assert supervisor_id, "Supervisor terminal ID should not be empty"
 
         # Step 2: Wait for provider to be ready (idle or completed).
         # Providers with initial prompts (Gemini CLI -i) reach 'completed'
         # after processing the system prompt; others reach 'idle'.
-        assert _wait_for_ready(
-            supervisor_id, timeout=120.0
-        ), f"Supervisor did not become ready within 120s (provider={provider})"
+        assert _wait_for_ready(supervisor_id, timeout=120.0), (
+            f"Supervisor did not become ready within 120s (provider={provider})"
+        )
         time.sleep(2)
 
         # Step 3: Send task that requires delegation.
@@ -200,9 +195,7 @@ def _run_supervisor_handoff_test(provider: str):
         # Step 4+5: Wait for supervisor to complete AND create worker terminal.
         # Uses combined polling because some providers (Gemini CLI) report
         # COMPLETED from initial text output before MCP tool calls finish.
-        status, terminals = _wait_for_supervisor_done(
-            supervisor_id, actual_session, min_terminals=2
-        )
+        status, terminals = _wait_for_supervisor_done(supervisor_id, actual_session, min_terminals=2)
         assert status == "completed", (
             f"Supervisor did not reach COMPLETED within {SUPERVISOR_COMPLETION_TIMEOUT}s "
             f"(provider={provider}). Last status: {status}"
@@ -260,17 +253,15 @@ def _run_supervisor_assign_test(provider: str):
 
     try:
         # Step 1: Create supervisor terminal
-        supervisor_id, actual_session = create_terminal(
-            provider, "analysis_supervisor", session_name
-        )
+        supervisor_id, actual_session = create_terminal(provider, "analysis_supervisor", session_name)
         assert supervisor_id, "Supervisor terminal ID should not be empty"
 
         # Step 2: Wait for provider to be ready (idle or completed).
         # Providers with initial prompts (Gemini CLI -i) reach 'completed'
         # after processing the system prompt; others reach 'idle'.
-        assert _wait_for_ready(
-            supervisor_id, timeout=120.0
-        ), f"Supervisor did not become ready within 120s (provider={provider})"
+        assert _wait_for_ready(supervisor_id, timeout=120.0), (
+            f"Supervisor did not become ready within 120s (provider={provider})"
+        )
         time.sleep(2)
 
         # Step 3: Send task requiring assign + handoff.
@@ -292,9 +283,7 @@ def _run_supervisor_assign_test(provider: str):
         # assign(data_analyst) + handoff(report_generator) = at least 3 terminals.
         # Uses combined polling because some providers (Gemini CLI) report
         # COMPLETED from initial text output before MCP tool calls finish.
-        status, terminals = _wait_for_supervisor_done(
-            supervisor_id, actual_session, min_terminals=3
-        )
+        status, terminals = _wait_for_supervisor_done(supervisor_id, actual_session, min_terminals=3)
         assert status == "completed", (
             f"Supervisor did not reach COMPLETED within {SUPERVISOR_COMPLETION_TIMEOUT}s "
             f"(provider={provider}). Last status: {status}"
@@ -382,14 +371,12 @@ def _run_supervisor_assign_three_analysts_test(provider: str):
     actual_session = None
 
     try:
-        supervisor_id, actual_session = create_terminal(
-            provider, "analysis_supervisor", session_name
-        )
+        supervisor_id, actual_session = create_terminal(provider, "analysis_supervisor", session_name)
         assert supervisor_id, "Supervisor terminal ID should not be empty"
 
-        assert _wait_for_ready(
-            supervisor_id, timeout=120.0
-        ), f"Supervisor did not become ready within 120s (provider={provider})"
+        assert _wait_for_ready(supervisor_id, timeout=120.0), (
+            f"Supervisor did not become ready within 120s (provider={provider})"
+        )
         time.sleep(2)
 
         task_message = (
@@ -408,16 +395,11 @@ def _run_supervisor_assign_three_analysts_test(provider: str):
         assert resp.status_code == 200, f"Send message failed: {resp.status_code}"
 
         # Expected minimum: supervisor + 3 analysts + report generator
-        status, terminals = _wait_for_supervisor_done(
-            supervisor_id, actual_session, min_terminals=5, timeout=420
-        )
+        status, terminals = _wait_for_supervisor_done(supervisor_id, actual_session, min_terminals=5, timeout=420)
         assert status == "completed", (
-            f"Supervisor did not reach COMPLETED within timeout (provider={provider}). "
-            f"Last status: {status}"
+            f"Supervisor did not reach COMPLETED within timeout (provider={provider}). Last status: {status}"
         )
-        assert len(terminals) >= 5, (
-            "Expected at least 5 terminals " "(supervisor + analyst A/B/C + report_generator)"
-        )
+        assert len(terminals) >= 5, "Expected at least 5 terminals (supervisor + analyst A/B/C + report_generator)"
 
         # Verify 3 analyst callbacks were delivered to supervisor inbox.
         delivered_messages = []
@@ -460,12 +442,10 @@ def _run_supervisor_assign_three_analysts_test(provider: str):
             time.sleep(5)
 
         assert len(output.strip()) > 0, "Supervisor output should not be empty"
-        assert re.search(
-            r"\b(summary|report)\b", cleaned
-        ), "Expected report-style summary content in final output"
-        assert re.search(
-            r"\b(conclusions?|recommendations?|overall|synthesis|final)\b", cleaned
-        ), f"Expected final synthesis/conclusion content in final report output. Got: {output[-500:]}"
+        assert re.search(r"\b(summary|report)\b", cleaned), "Expected report-style summary content in final output"
+        assert re.search(r"\b(conclusions?|recommendations?|overall|synthesis|final)\b", cleaned), (
+            f"Expected final synthesis/conclusion content in final report output. Got: {output[-500:]}"
+        )
 
     finally:
         if actual_session:

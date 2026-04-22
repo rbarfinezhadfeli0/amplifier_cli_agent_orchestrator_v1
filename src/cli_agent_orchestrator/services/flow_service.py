@@ -5,7 +5,8 @@ import logging
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any
+from typing import cast
 
 import frontmatter  # type: ignore
 from apscheduler.triggers.cron import CronTrigger  # type: ignore
@@ -16,12 +17,11 @@ from cli_agent_orchestrator.clients.database import get_flow as db_get_flow
 from cli_agent_orchestrator.clients.database import get_flows_to_run as db_get_flows_to_run
 from cli_agent_orchestrator.clients.database import list_flows as db_list_flows
 from cli_agent_orchestrator.clients.database import update_flow_enabled as db_update_flow_enabled
-from cli_agent_orchestrator.clients.database import (
-    update_flow_run_times as db_update_flow_run_times,
-)
-from cli_agent_orchestrator.constants import DEFAULT_PROVIDER, PROVIDERS
+from cli_agent_orchestrator.clients.database import update_flow_run_times as db_update_flow_run_times
+from cli_agent_orchestrator.constants import DEFAULT_PROVIDER
 from cli_agent_orchestrator.models.flow import Flow
-from cli_agent_orchestrator.services.terminal_service import create_terminal, send_input
+from cli_agent_orchestrator.services.terminal_service import create_terminal
+from cli_agent_orchestrator.services.terminal_service import send_input
 from cli_agent_orchestrator.utils.template import render_template
 from cli_agent_orchestrator.utils.terminal import generate_session_name
 
@@ -33,13 +33,11 @@ def _get_next_run_time(cron_expression: str) -> datetime:
     trigger = CronTrigger.from_crontab(cron_expression)
     next_time = trigger.get_next_fire_time(None, datetime.now())
     if next_time is None:
-        raise ValueError(
-            f"Could not calculate next run time for cron expression: {cron_expression}"
-        )
+        raise ValueError(f"Could not calculate next run time for cron expression: {cron_expression}")
     return cast(datetime, next_time)
 
 
-def _parse_flow_file(file_path: Path) -> Tuple[Dict, str]:
+def _parse_flow_file(file_path: Path) -> tuple[dict, str]:
     """Parse flow file and return metadata and prompt template.
 
     Returns:
@@ -48,7 +46,7 @@ def _parse_flow_file(file_path: Path) -> Tuple[Dict, str]:
     if not file_path.exists():
         raise ValueError(f"Flow file not found: {file_path}")
 
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         post = frontmatter.load(f)
 
     return post.metadata, post.content
@@ -69,9 +67,7 @@ def add_flow(file_path: str) -> Flow:
         name = metadata["name"]
         schedule = metadata["schedule"]
         agent_profile = metadata["agent_profile"]
-        provider = metadata.get(
-            "provider", DEFAULT_PROVIDER
-        )  # Optional, defaults to DEFAULT_PROVIDER
+        provider = metadata.get("provider", DEFAULT_PROVIDER)  # Optional, defaults to DEFAULT_PROVIDER
         script = metadata.get("script", "")  # Optional
 
         # Validate cron expression and calculate next run
@@ -109,7 +105,7 @@ def _enrich_flow_with_prompt(flow: Flow) -> Flow:
     return flow
 
 
-def list_flows() -> List[Flow]:
+def list_flows() -> list[Flow]:
     """List all flows."""
     return [_enrich_flow_with_prompt(f) for f in db_list_flows()]
 
@@ -178,9 +174,7 @@ def execute_flow(name: str) -> bool:
 
             if result.returncode != 0:
                 logger.error(f"Script failed: {result.stderr}")
-                raise ValueError(
-                    f"Script failed with exit code {result.returncode}: {result.stderr}"
-                )
+                raise ValueError(f"Script failed with exit code {result.returncode}: {result.stderr}")
 
             # Parse JSON output
             try:
@@ -207,7 +201,7 @@ def execute_flow(name: str) -> bool:
         # Render prompt template
         if not isinstance(output["output"], dict):
             raise ValueError("Script output 'output' field must be a dictionary")
-        output_dict: Dict[str, Any] = output["output"]  # type: ignore[assignment]
+        output_dict: dict[str, Any] = output["output"]  # type: ignore[assignment]
         rendered_prompt = render_template(prompt_template, output_dict)
 
         # Launch session
@@ -230,6 +224,6 @@ def execute_flow(name: str) -> bool:
         raise
 
 
-def get_flows_to_run() -> List[Flow]:
+def get_flows_to_run() -> list[Flow]:
     """Get flows that should run now."""
     return db_get_flows_to_run()

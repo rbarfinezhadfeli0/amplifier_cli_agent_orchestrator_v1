@@ -1,7 +1,6 @@
 """Provider manager as module singleton with direct terminal_id → provider mapping."""
 
 import logging
-from typing import Dict, List, Optional
 
 from cli_agent_orchestrator.clients.database import get_terminal_metadata
 from cli_agent_orchestrator.models.provider import ProviderType
@@ -21,7 +20,7 @@ class ProviderManager:
     """Simplified provider manager with direct mapping."""
 
     def __init__(self) -> None:
-        self._providers: Dict[str, BaseProvider] = {}
+        self._providers: dict[str, BaseProvider] = {}
 
     def create_provider(
         self,
@@ -29,10 +28,10 @@ class ProviderManager:
         terminal_id: str,
         tmux_session: str,
         tmux_window: str,
-        agent_profile: Optional[str] = None,
-        allowed_tools: Optional[List[str]] = None,
-        skill_prompt: Optional[str] = None,
-        model: Optional[str] = None,
+        agent_profile: str | None = None,
+        allowed_tools: list[str] | None = None,
+        skill_prompt: str | None = None,
+        model: str | None = None,
     ) -> BaseProvider:
         """Create and store provider instance."""
         try:
@@ -111,12 +110,10 @@ class ProviderManager:
             return provider
 
         except Exception as e:
-            logger.error(
-                f"Failed to create provider {provider_type} for terminal {terminal_id}: {e}"
-            )
+            logger.error(f"Failed to create provider {provider_type} for terminal {terminal_id}: {e}")
             raise
 
-    def get_provider(self, terminal_id: str) -> Optional[BaseProvider]:
+    def get_provider(self, terminal_id: str) -> BaseProvider | None:
         """Get provider instance, creating on-demand if not found.
 
         Args:
@@ -159,12 +156,9 @@ class ProviderManager:
         except Exception as e:
             logger.error(f"Failed to cleanup provider for terminal {terminal_id}: {e}")
 
-    def list_providers(self) -> Dict[str, str]:
+    def list_providers(self) -> dict[str, str]:
         """List all active providers (for debugging)."""
-        return {
-            terminal_id: provider.__class__.__name__
-            for terminal_id, provider in self._providers.items()
-        }
+        return {terminal_id: provider.__class__.__name__ for terminal_id, provider in self._providers.items()}
 
 
 # Module-level singleton

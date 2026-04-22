@@ -4,17 +4,20 @@ import asyncio
 import logging
 import os
 import time
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
+from typing import Union
 
 import requests
 from fastmcp import FastMCP
 from pydantic import Field
 
-from cli_agent_orchestrator.constants import API_BASE_URL, DEFAULT_PROVIDER
+from cli_agent_orchestrator.constants import API_BASE_URL
+from cli_agent_orchestrator.constants import DEFAULT_PROVIDER
 from cli_agent_orchestrator.mcp_server.models import HandoffResult
 from cli_agent_orchestrator.models.inbox import OrchestrationType
 from cli_agent_orchestrator.models.terminal import TerminalStatus
-from cli_agent_orchestrator.utils.terminal import generate_session_name, wait_until_terminal_status
+from cli_agent_orchestrator.utils.terminal import generate_session_name
+from cli_agent_orchestrator.utils.terminal import wait_until_terminal_status
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +55,7 @@ Returns:
 """
 
 
-def _resolve_child_allowed_tools(
-    parent_allowed_tools: Optional[list], child_profile_name: str
-) -> Optional[str]:
+def _resolve_child_allowed_tools(parent_allowed_tools: list | None, child_profile_name: str) -> str | None:
     """Resolve allowed_tools for a child terminal via intersection.
 
     The child gets at most the union of: what the parent allows + what the
@@ -69,12 +70,8 @@ def _resolve_child_allowed_tools(
 
     try:
         child_profile = load_agent_profile(child_profile_name)
-        mcp_server_names = (
-            list(child_profile.mcpServers.keys()) if child_profile.mcpServers else None
-        )
-        child_allowed = resolve_allowed_tools(
-            child_profile.allowedTools, child_profile.role, mcp_server_names
-        )
+        mcp_server_names = list(child_profile.mcpServers.keys()) if child_profile.mcpServers else None
+        child_allowed = resolve_allowed_tools(child_profile.allowedTools, child_profile.role, mcp_server_names)
     except FileNotFoundError:
         child_allowed = None
 
@@ -98,9 +95,7 @@ def _resolve_child_allowed_tools(
     return ",".join(child_allowed)
 
 
-def _create_terminal(
-    agent_profile: str, working_directory: Optional[str] = None
-) -> Tuple[str, str]:
+def _create_terminal(agent_profile: str, working_directory: str | None = None) -> tuple[str, str]:
     """Create a new terminal with the specified agent profile.
 
     Args:
@@ -131,9 +126,7 @@ def _create_terminal(
         # If no working_directory specified, get conductor's current directory
         if working_directory is None:
             try:
-                response = requests.get(
-                    f"{API_BASE_URL}/terminals/{current_terminal_id}/working-directory"
-                )
+                response = requests.get(f"{API_BASE_URL}/terminals/{current_terminal_id}/working-directory")
                 if response.status_code == 200:
                     working_directory = response.json().get("working_directory")
                     logger.info(f"Inherited working directory from conductor: {working_directory}")
@@ -143,9 +136,7 @@ def _create_terminal(
                         "will use server default"
                     )
             except Exception as e:
-                logger.warning(
-                    f"Error fetching conductor's working directory: {e}, will use server default"
-                )
+                logger.warning(f"Error fetching conductor's working directory: {e}, will use server default")
 
         # Resolve child's allowed_tools via inheritance
         child_allowed_tools = _resolve_child_allowed_tools(parent_allowed_tools, agent_profile)
@@ -178,9 +169,7 @@ def _create_terminal(
     return terminal["id"], provider
 
 
-def _send_direct_input(
-    terminal_id: str, message: str, orchestration_type: OrchestrationType
-) -> None:
+def _send_direct_input(terminal_id: str, message: str, orchestration_type: OrchestrationType) -> None:
     """Send input directly to a terminal (bypasses inbox).
 
     Args:
@@ -236,7 +225,7 @@ def _send_direct_input_assign(terminal_id: str, message: str) -> None:
     _send_direct_input(terminal_id, message, OrchestrationType.ASSIGN)
 
 
-def _send_to_inbox(receiver_id: str, message: str) -> Dict[str, Any]:
+def _send_to_inbox(receiver_id: str, message: str) -> dict[str, Any]:
     """Send message to another terminal's inbox (queued delivery when IDLE).
 
     Args:
@@ -278,7 +267,7 @@ def _extract_error_detail(response: requests.Response, fallback: str) -> str:
     return fallback
 
 
-def _load_skill_impl(name: str) -> Union[str, Dict[str, Any]]:
+def _load_skill_impl(name: str) -> Union[str, dict[str, Any]]:
     """Fetch a skill body from cao-server and return content or a structured error."""
     try:
         response = requests.get(f"{API_BASE_URL}/skills/{name}")
@@ -300,7 +289,7 @@ def _load_skill_impl(name: str) -> Union[str, Dict[str, Any]]:
 
 # Implementation functions
 async def _handoff_impl(
-    agent_profile: str, message: str, timeout: int = 600, working_directory: Optional[str] = None
+    agent_profile: str, message: str, timeout: int = 600, working_directory: str | None = None
 ) -> HandoffResult:
     """Implementation of handoff logic."""
     start_time = time.time()
@@ -340,9 +329,7 @@ async def _handoff_impl(
         _send_direct_input_handoff(terminal_id, provider, message)
 
         # Monitor until completion with timeout
-        if not wait_until_terminal_status(
-            terminal_id, TerminalStatus.COMPLETED, timeout=timeout, polling_interval=1.0
-        ):
+        if not wait_until_terminal_status(terminal_id, TerminalStatus.COMPLETED, timeout=timeout, polling_interval=1.0):
             return HandoffResult(
                 success=False,
                 message=f"Handoff timed out after {timeout} seconds",
@@ -351,9 +338,7 @@ async def _handoff_impl(
             )
 
         # Get the response
-        response = requests.get(
-            f"{API_BASE_URL}/terminals/{terminal_id}/output", params={"mode": "last"}
-        )
+        response = requests.get(f"{API_BASE_URL}/terminals/{terminal_id}/output", params={"mode": "last"})
         response.raise_for_status()
         output_data = response.json()
         output = output_data["output"]
@@ -372,9 +357,7 @@ async def _handoff_impl(
         )
 
     except Exception as e:
-        return HandoffResult(
-            success=False, message=f"Handoff failed: {str(e)}", output=None, terminal_id=None
-        )
+        return HandoffResult(success=False, message=f"Handoff failed: {str(e)}", output=None, terminal_id=None)
 
 
 # Conditional tool registration based on environment variable
@@ -382,9 +365,7 @@ if ENABLE_WORKING_DIRECTORY:
 
     @mcp.tool()
     async def handoff(
-        agent_profile: str = Field(
-            description='The agent profile to hand off to (e.g., "developer", "analyst")'
-        ),
+        agent_profile: str = Field(description='The agent profile to hand off to (e.g., "developer", "analyst")'),
         message: str = Field(description="The message/task to send to the target agent"),
         timeout: int = Field(
             default=600,
@@ -392,7 +373,7 @@ if ENABLE_WORKING_DIRECTORY:
             ge=1,
             le=3600,
         ),
-        working_directory: Optional[str] = Field(
+        working_directory: str | None = Field(
             default=None,
             description='Optional working directory where the agent should execute (e.g., "/path/to/workspace/src/Package")',
         ),
@@ -440,9 +421,7 @@ else:
 
     @mcp.tool()
     async def handoff(
-        agent_profile: str = Field(
-            description='The agent profile to hand off to (e.g., "developer", "analyst")'
-        ),
+        agent_profile: str = Field(description='The agent profile to hand off to (e.g., "developer", "analyst")'),
         message: str = Field(description="The message/task to send to the target agent"),
         timeout: int = Field(
             default=600,
@@ -483,9 +462,7 @@ else:
 
 
 # Implementation function for assign
-def _assign_impl(
-    agent_profile: str, message: str, working_directory: Optional[str] = None
-) -> Dict[str, Any]:
+def _assign_impl(agent_profile: str, message: str, working_directory: str | None = None) -> dict[str, Any]:
     """Implementation of assign logic."""
     try:
         # Create terminal
@@ -564,9 +541,7 @@ Returns:
     return desc
 
 
-_assign_description = _build_assign_description(
-    ENABLE_SENDER_ID_INJECTION, ENABLE_WORKING_DIRECTORY
-)
+_assign_description = _build_assign_description(ENABLE_SENDER_ID_INJECTION, ENABLE_WORKING_DIRECTORY)
 _assign_message_field_desc = (
     "The task message to send to the worker agent."
     if ENABLE_SENDER_ID_INJECTION
@@ -577,39 +552,32 @@ if ENABLE_WORKING_DIRECTORY:
 
     @mcp.tool(description=_assign_description)
     async def assign(
-        agent_profile: str = Field(
-            description='The agent profile for the worker agent (e.g., "developer", "analyst")'
-        ),
+        agent_profile: str = Field(description='The agent profile for the worker agent (e.g., "developer", "analyst")'),
         message: str = Field(description=_assign_message_field_desc),
-        working_directory: Optional[str] = Field(
+        working_directory: str | None = Field(
             default=None, description="Optional working directory where the agent should execute"
         ),
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return _assign_impl(agent_profile, message, working_directory)
 
 else:
 
     @mcp.tool(description=_assign_description)
     async def assign(
-        agent_profile: str = Field(
-            description='The agent profile for the worker agent (e.g., "developer", "analyst")'
-        ),
+        agent_profile: str = Field(description='The agent profile for the worker agent (e.g., "developer", "analyst")'),
         message: str = Field(description=_assign_message_field_desc),
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return _assign_impl(agent_profile, message, None)
 
 
 # Implementation function for send_message
-def _send_message_impl(receiver_id: str, message: str) -> Dict[str, Any]:
+def _send_message_impl(receiver_id: str, message: str) -> dict[str, Any]:
     """Implementation of send_message logic."""
     try:
         # Auto-inject sender terminal ID suffix when enabled
         if ENABLE_SENDER_ID_INJECTION:
             sender_id = os.environ.get("CAO_TERMINAL_ID", "unknown")
-            message += (
-                f"\n\n[Message from terminal {sender_id}. "
-                "Use send_message MCP tool for any follow-up work.]"
-            )
+            message += f"\n\n[Message from terminal {sender_id}. Use send_message MCP tool for any follow-up work.]"
 
         return _send_to_inbox(receiver_id, message)
     except Exception as e:
@@ -620,7 +588,7 @@ def _send_message_impl(receiver_id: str, message: str) -> Dict[str, Any]:
 async def send_message(
     receiver_id: str = Field(description="Target terminal ID to send message to"),
     message: str = Field(description="Message content to send"),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Send a message to another terminal's inbox.
 
     The message will be delivered when the destination terminal is IDLE.

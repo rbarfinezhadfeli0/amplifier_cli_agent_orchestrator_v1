@@ -25,17 +25,14 @@ Run:
 
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    create_terminal,
-    get_terminal_status,
-    wait_for_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import cleanup_terminal
+from test.e2e.conftest import create_terminal
+from test.e2e.conftest import get_terminal_status
 
 
 def _create_terminal_in_session(session_name: str, provider: str, agent_profile: str):
@@ -152,8 +149,7 @@ def _run_send_message_test(provider: str, agent_profile: str):
                 found = True
                 break
         assert found, (
-            f"Test message not found in receiver's inbox. "
-            f"Messages: {[m.get('message', '')[:50] for m in messages]}"
+            f"Test message not found in receiver's inbox. Messages: {[m.get('message', '')[:50] for m in messages]}"
         )
 
         # Step 7: Verify message was DELIVERED (not stuck as PENDING).
@@ -163,10 +159,7 @@ def _run_send_message_test(provider: str, agent_profile: str):
         for _ in range(24):  # up to 120s (TUI providers need time to go IDLE)
             time.sleep(5)
             messages = _get_inbox_messages(receiver_id, status_filter="delivered")
-            if any(
-                m.get("sender_id") == sender_id and test_message in m.get("message", "")
-                for m in messages
-            ):
+            if any(m.get("sender_id") == sender_id and test_message in m.get("message", "") for m in messages):
                 delivered = True
                 break
         assert delivered, (
@@ -186,8 +179,7 @@ def _run_send_message_test(provider: str, agent_profile: str):
                 transitioned = True
                 break
         assert transitioned, (
-            f"Receiver should have transitioned from IDLE after inbox delivery "
-            f"within 60s, got: {receiver_status}"
+            f"Receiver should have transitioned from IDLE after inbox delivery within 60s, got: {receiver_status}"
         )
 
     finally:

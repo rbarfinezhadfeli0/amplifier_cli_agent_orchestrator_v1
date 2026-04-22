@@ -1,11 +1,15 @@
 """Cleanup service for old terminals, messages, and logs."""
 
 import logging
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
+from datetime import timedelta
 
-from cli_agent_orchestrator.clients.database import InboxModel, SessionLocal, TerminalModel
-from cli_agent_orchestrator.constants import LOG_DIR, RETENTION_DAYS, TERMINAL_LOG_DIR
+from cli_agent_orchestrator.clients.database import InboxModel
+from cli_agent_orchestrator.clients.database import SessionLocal
+from cli_agent_orchestrator.clients.database import TerminalModel
+from cli_agent_orchestrator.constants import LOG_DIR
+from cli_agent_orchestrator.constants import RETENTION_DAYS
+from cli_agent_orchestrator.constants import TERMINAL_LOG_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -14,23 +18,17 @@ def cleanup_old_data():
     """Clean up terminals, inbox messages, and log files older than RETENTION_DAYS."""
     try:
         cutoff_date = datetime.now() - timedelta(days=RETENTION_DAYS)
-        logger.info(
-            f"Starting cleanup of data older than {RETENTION_DAYS} days (before {cutoff_date})"
-        )
+        logger.info(f"Starting cleanup of data older than {RETENTION_DAYS} days (before {cutoff_date})")
 
         # Clean up old terminals
         with SessionLocal() as db:
-            deleted_terminals = (
-                db.query(TerminalModel).filter(TerminalModel.last_active < cutoff_date).delete()
-            )
+            deleted_terminals = db.query(TerminalModel).filter(TerminalModel.last_active < cutoff_date).delete()
             db.commit()
             logger.info(f"Deleted {deleted_terminals} old terminals from database")
 
         # Clean up old inbox messages
         with SessionLocal() as db:
-            deleted_messages = (
-                db.query(InboxModel).filter(InboxModel.created_at < cutoff_date).delete()
-            )
+            deleted_messages = db.query(InboxModel).filter(InboxModel.created_at < cutoff_date).delete()
             db.commit()
             logger.info(f"Deleted {deleted_messages} old inbox messages from database")
 

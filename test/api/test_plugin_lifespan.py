@@ -1,13 +1,19 @@
 """Integration tests for plugin registry FastAPI lifespan wiring."""
 
 import logging
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from fastapi import Request
 
-from cli_agent_orchestrator.api.main import app, get_plugin_registry, lifespan
-from cli_agent_orchestrator.plugins import CaoPlugin, PluginRegistry, hook
+from cli_agent_orchestrator.api.main import app
+from cli_agent_orchestrator.api.main import get_plugin_registry
+from cli_agent_orchestrator.api.main import lifespan
+from cli_agent_orchestrator.plugins import CaoPlugin
+from cli_agent_orchestrator.plugins import PluginRegistry
+from cli_agent_orchestrator.plugins import hook
 from cli_agent_orchestrator.plugins.events import PostSendMessageEvent
 
 
@@ -27,9 +33,7 @@ class TestPluginRegistryLifespan:
         mock_load = AsyncMock()
         mock_teardown = AsyncMock()
         mock_load.side_effect = lambda: ordering.append("registry_load")
-        mock_observer.schedule.side_effect = lambda *args, **kwargs: ordering.append(
-            "observer_schedule"
-        )
+        mock_observer.schedule.side_effect = lambda *args, **kwargs: ordering.append("observer_schedule")
 
         request_scope = {"type": "http", "app": app, "headers": []}
 

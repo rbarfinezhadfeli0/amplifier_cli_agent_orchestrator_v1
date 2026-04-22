@@ -28,17 +28,14 @@ Run:
 
 import time
 import uuid
-from test.e2e.conftest import (
-    cleanup_terminal,
-    extract_output,
-    get_terminal_status,
-    wait_for_status,
-)
 
 import pytest
 import requests
 
 from cli_agent_orchestrator.constants import API_BASE_URL
+from test.e2e.conftest import extract_output
+from test.e2e.conftest import get_terminal_status
+from test.e2e.conftest import wait_for_status
 
 COMPLETION_TIMEOUT = 180
 
@@ -80,9 +77,7 @@ def _create_session(provider: str, agent_profile: str, session_name: str):
     return data["id"], data["session_name"]
 
 
-def _add_terminal_in_session(
-    session_name: str, provider: str, agent_profile: str, retries: int = 1
-):
+def _add_terminal_in_session(session_name: str, provider: str, agent_profile: str, retries: int = 1):
     """Add a terminal to an existing session via the API.
 
     The ``provider`` param is the *fallback* — if the agent profile declares
@@ -131,18 +126,14 @@ def _run_cross_provider_test(
     4. Send task, wait for completion, validate output
     """
     session_suffix = uuid.uuid4().hex[:6]
-    session_name = (
-        f"e2e-xprov-{supervisor_provider[:4]}-{expected_worker_provider[:4]}-{session_suffix}"
-    )
+    session_name = f"e2e-xprov-{supervisor_provider[:4]}-{expected_worker_provider[:4]}-{session_suffix}"
     supervisor_id = None
     worker_id = None
     actual_session = None
 
     try:
         # Step 1: Create supervisor session
-        supervisor_id, actual_session = _create_session(
-            supervisor_provider, "data_analyst", session_name
-        )
+        supervisor_id, actual_session = _create_session(supervisor_provider, "data_analyst", session_name)
         assert supervisor_id, "Supervisor terminal ID should not be empty"
 
         # Wait for supervisor to be ready
@@ -153,14 +144,12 @@ def _run_cross_provider_test(
                 break
             time.sleep(3)
         assert s in ("idle", "completed"), (
-            f"Supervisor did not become ready within 90s " f"(provider={supervisor_provider})"
+            f"Supervisor did not become ready within 90s (provider={supervisor_provider})"
         )
         time.sleep(2)
 
         # Step 2: Add worker terminal with cross-provider profile
-        worker_id, reported_provider = _add_terminal_in_session(
-            actual_session, supervisor_provider, worker_profile
-        )
+        worker_id, reported_provider = _add_terminal_in_session(actual_session, supervisor_provider, worker_profile)
         assert worker_id, "Worker terminal ID should not be empty"
 
         # Step 3: Verify provider override worked
@@ -175,8 +164,7 @@ def _run_cross_provider_test(
         assert resp.status_code == 200
         terminal_info = resp.json()
         assert terminal_info["provider"] == expected_worker_provider, (
-            f"GET /terminals confirms wrong provider: "
-            f"{terminal_info['provider']} != {expected_worker_provider}"
+            f"GET /terminals confirms wrong provider: {terminal_info['provider']} != {expected_worker_provider}"
         )
 
         # Step 4: Wait for worker to be ready
@@ -187,8 +175,7 @@ def _run_cross_provider_test(
                 break
             time.sleep(3)
         assert s in ("idle", "completed"), (
-            f"Worker did not become ready within 90s "
-            f"(expected provider={expected_worker_provider})"
+            f"Worker did not become ready within 90s (expected provider={expected_worker_provider})"
         )
         time.sleep(2)
 

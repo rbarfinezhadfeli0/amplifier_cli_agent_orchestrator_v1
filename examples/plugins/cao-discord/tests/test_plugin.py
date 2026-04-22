@@ -4,8 +4,8 @@ import json
 
 import httpx
 import pytest
-
 from cao_discord.plugin import DiscordPlugin
+
 from cli_agent_orchestrator.plugins import PostSendMessageEvent
 
 
@@ -16,9 +16,7 @@ def _timeout_values(plugin: DiscordPlugin) -> tuple[float | None, float | None, 
     return timeout.connect, timeout.read, timeout.write, timeout.pool
 
 
-async def _replace_client_with_mock_transport(
-    plugin: DiscordPlugin, handler: httpx.MockTransport
-) -> None:
+async def _replace_client_with_mock_transport(plugin: DiscordPlugin, handler: httpx.MockTransport) -> None:
     """Swap in a mock transport-backed client and close the setup client first."""
 
     await plugin._client.aclose()
@@ -26,9 +24,7 @@ async def _replace_client_with_mock_transport(
 
 
 @pytest.mark.asyncio
-async def test_setup_raises_when_webhook_url_is_missing(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_setup_raises_when_webhook_url_is_missing(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """Missing configuration should raise a RuntimeError with guidance."""
 
     monkeypatch.delenv("CAO_DISCORD_WEBHOOK_URL", raising=False)
@@ -43,9 +39,7 @@ async def test_setup_raises_when_webhook_url_is_missing(
 
 
 @pytest.mark.asyncio
-async def test_setup_reads_webhook_url_from_dotenv(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_setup_reads_webhook_url_from_dotenv(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """A .env file in the process CWD should populate the webhook URL."""
 
     webhook_url = "https://discord.example/from-dotenv"
@@ -63,9 +57,7 @@ async def test_setup_reads_webhook_url_from_dotenv(
 
 
 @pytest.mark.asyncio
-async def test_setup_prefers_process_env_over_dotenv(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_setup_prefers_process_env_over_dotenv(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """Process environment variables should override .env values."""
 
     dotenv_url = "https://discord.example/from-dotenv"
@@ -84,9 +76,7 @@ async def test_setup_prefers_process_env_over_dotenv(
 
 
 @pytest.mark.asyncio
-async def test_setup_uses_configured_timeout_or_default(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_setup_uses_configured_timeout_or_default(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """Timeout should default to 5.0 seconds and honor configured overrides."""
 
     monkeypatch.chdir(tmp_path)
@@ -110,9 +100,7 @@ async def test_setup_uses_configured_timeout_or_default(
 
 
 @pytest.mark.asyncio
-async def test_teardown_is_safe_after_failed_setup(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_teardown_is_safe_after_failed_setup(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """Teardown should be a no-op when setup failed before client creation."""
 
     monkeypatch.delenv("CAO_DISCORD_WEBHOOK_URL", raising=False)
@@ -303,9 +291,7 @@ async def test_on_post_send_message_logs_warning_for_httpx_error_without_raising
 
 
 @pytest.mark.asyncio
-async def test_teardown_closes_real_client_after_successful_setup(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+async def test_teardown_closes_real_client_after_successful_setup(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     """Teardown should close a real AsyncClient instance."""
 
     def handler(request: httpx.Request) -> httpx.Response:

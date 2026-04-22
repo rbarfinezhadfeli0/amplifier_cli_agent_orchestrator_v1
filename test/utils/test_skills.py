@@ -6,22 +6,18 @@ from unittest.mock import patch
 import pytest
 
 from cli_agent_orchestrator.models.skill import SkillMetadata
-from cli_agent_orchestrator.utils.skills import (
-    build_skill_catalog,
-    list_skills,
-    load_skill_content,
-    load_skill_metadata,
-    validate_skill_folder,
-)
+from cli_agent_orchestrator.utils.skills import build_skill_catalog
+from cli_agent_orchestrator.utils.skills import list_skills
+from cli_agent_orchestrator.utils.skills import load_skill_content
+from cli_agent_orchestrator.utils.skills import load_skill_metadata
+from cli_agent_orchestrator.utils.skills import validate_skill_folder
 
 
 def _write_skill(folder: Path, name: str, description: str, body: str = "# Title\n\nBody") -> Path:
     """Create a skill folder with a valid SKILL.md file."""
     folder.mkdir(parents=True, exist_ok=True)
     skill_file = folder / "SKILL.md"
-    skill_file.write_text(
-        "---\n" f"name: {name}\n" f"description: {description}\n" "---\n\n" f"{body}\n"
-    )
+    skill_file.write_text(f"---\nname: {name}\ndescription: {description}\n---\n\n{body}\n")
     return skill_file
 
 
@@ -79,9 +75,7 @@ class TestLoadSkillMetadata:
         monkeypatch.setattr("cli_agent_orchestrator.utils.skills.SKILLS_DIR", tmp_path)
         skill_dir = tmp_path / "python-testing"
         skill_dir.mkdir()
-        (skill_dir / "SKILL.md").write_text(
-            "---\nname: python-testing\ndescription: '   '\n---\n\nBody\n"
-        )
+        (skill_dir / "SKILL.md").write_text("---\nname: python-testing\ndescription: '   '\n---\n\nBody\n")
 
         with pytest.raises(ValueError, match="Invalid skill metadata"):
             load_skill_metadata("python-testing")
@@ -234,9 +228,7 @@ class TestDefaultBundledSkills:
             assert metadata.description
 
     def test_default_skills_cover_core_communication_primitives(self):
-        supervisor_content = (
-            self.bundled_skills_dir / "cao-supervisor-protocols" / "SKILL.md"
-        ).read_text()
+        supervisor_content = (self.bundled_skills_dir / "cao-supervisor-protocols" / "SKILL.md").read_text()
         worker_content = (self.bundled_skills_dir / "cao-worker-protocols" / "SKILL.md").read_text()
 
         assert "assign" in supervisor_content

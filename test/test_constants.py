@@ -89,7 +89,7 @@ class TestCaoHomeDir:
         from cli_agent_orchestrator.constants import CAO_HOME_DIR
 
         expected = Path.home() / ".aws" / "cli-agent-orchestrator"
-        assert CAO_HOME_DIR == expected
+        assert expected == CAO_HOME_DIR
 
     def test_cao_home_dir_is_pathlib_path(self):
         """Test that CAO_HOME_DIR is a Path object."""
@@ -99,19 +99,22 @@ class TestCaoHomeDir:
 
     def test_db_dir_is_under_cao_home(self):
         """Test that DB_DIR is under CAO_HOME_DIR."""
-        from cli_agent_orchestrator.constants import CAO_HOME_DIR, DB_DIR
+        from cli_agent_orchestrator.constants import CAO_HOME_DIR
+        from cli_agent_orchestrator.constants import DB_DIR
 
         assert DB_DIR == CAO_HOME_DIR / "db"
 
     def test_local_agent_store_dir_is_under_cao_home(self):
         """Test that LOCAL_AGENT_STORE_DIR is under CAO_HOME_DIR."""
-        from cli_agent_orchestrator.constants import CAO_HOME_DIR, LOCAL_AGENT_STORE_DIR
+        from cli_agent_orchestrator.constants import CAO_HOME_DIR
+        from cli_agent_orchestrator.constants import LOCAL_AGENT_STORE_DIR
 
         assert LOCAL_AGENT_STORE_DIR == CAO_HOME_DIR / "agent-store"
 
     def test_skills_dir_is_under_cao_home(self):
         """Test that SKILLS_DIR is under CAO_HOME_DIR."""
-        from cli_agent_orchestrator.constants import CAO_HOME_DIR, SKILLS_DIR
+        from cli_agent_orchestrator.constants import CAO_HOME_DIR
+        from cli_agent_orchestrator.constants import SKILLS_DIR
 
         assert SKILLS_DIR == CAO_HOME_DIR / "skills"
 

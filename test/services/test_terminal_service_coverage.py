@@ -4,7 +4,8 @@ Covers: create_terminal error cleanup, delete_terminal internals,
 and the SESSION_PREFIX branch.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -18,9 +19,7 @@ class TestCreateTerminalCleanup:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -63,9 +62,7 @@ class TestCreateTerminalCleanup:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -108,9 +105,7 @@ class TestCreateTerminalCleanup:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -152,9 +147,7 @@ class TestCreateTerminalCleanup:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -204,9 +197,7 @@ class TestCreateTerminalSessionCleanupGuard:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -242,9 +233,7 @@ class TestCreateTerminalSessionCleanupGuard:
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.db_create_terminal")
-    @patch(
-        "cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1"
-    )
+    @patch("cli_agent_orchestrator.services.terminal_service.generate_window_name", return_value="w1")
     @patch(
         "cli_agent_orchestrator.services.terminal_service.generate_terminal_id",
         return_value="tid1",
@@ -307,9 +296,7 @@ class TestDeleteTerminal:
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_delete_terminal_pipe_pane_failure_continues(
-        self, mock_meta, mock_tmux, mock_pm, mock_db_del
-    ):
+    def test_delete_terminal_pipe_pane_failure_continues(self, mock_meta, mock_tmux, mock_pm, mock_db_del):
         """Pipe-pane failure should be logged and not block deletion."""
         from cli_agent_orchestrator.services.terminal_service import delete_terminal
 
@@ -325,9 +312,7 @@ class TestDeleteTerminal:
     @patch("cli_agent_orchestrator.services.terminal_service.provider_manager")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_delete_terminal_kill_window_failure_continues(
-        self, mock_meta, mock_tmux, mock_pm, mock_db_del
-    ):
+    def test_delete_terminal_kill_window_failure_continues(self, mock_meta, mock_tmux, mock_pm, mock_db_del):
         """Kill-window failure should be logged and not block deletion."""
         from cli_agent_orchestrator.services.terminal_service import delete_terminal
 

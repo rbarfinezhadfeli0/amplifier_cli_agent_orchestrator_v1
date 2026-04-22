@@ -4,10 +4,12 @@ import logging
 import os
 
 import httpx
-from dotenv import find_dotenv, load_dotenv
+from dotenv import find_dotenv
+from dotenv import load_dotenv
 
 from cli_agent_orchestrator.clients.database import get_terminal_metadata
-from cli_agent_orchestrator.plugins import PostSendMessageEvent, hook
+from cli_agent_orchestrator.plugins import PostSendMessageEvent
+from cli_agent_orchestrator.plugins import hook
 from cli_agent_orchestrator.plugins.base import CaoPlugin
 
 logger = logging.getLogger(__name__)

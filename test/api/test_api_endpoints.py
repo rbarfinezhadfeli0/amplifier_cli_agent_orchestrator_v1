@@ -6,12 +6,14 @@ flow_daemon, lifespan, and the main() entry point.
 """
 
 import asyncio
-from datetime import datetime
-from unittest.mock import ANY, AsyncMock, MagicMock, patch
+from unittest.mock import ANY
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.api.main import app, flow_daemon
+from cli_agent_orchestrator.api.main import app
+from cli_agent_orchestrator.api.main import flow_daemon
 from cli_agent_orchestrator.models.terminal import Terminal
 from cli_agent_orchestrator.utils.skills import SkillNameError
 
@@ -176,9 +178,7 @@ class TestGetSkillContent:
         """GET /skills/{name} returns 400 for path traversal names."""
         with patch(
             "cli_agent_orchestrator.api.main.load_skill_content",
-            side_effect=SkillNameError(
-                "Invalid skill name '../secret': must not contain '/', '\\\\', or '..'"
-            ),
+            side_effect=SkillNameError("Invalid skill name '../secret': must not contain '/', '\\\\', or '..'"),
         ):
             response = client.get("/skills/%2E%2E")
 

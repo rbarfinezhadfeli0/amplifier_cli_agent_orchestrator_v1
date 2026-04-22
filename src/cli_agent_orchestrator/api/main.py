@@ -12,52 +12,53 @@ import subprocess
 import termios
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional, cast
+from typing import cast
 
-from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect, status
+from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import Query
+from fastapi import Request
+from fastapi import WebSocket
+from fastapi import WebSocketDisconnect
+from fastapi import status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import field_validator
 from watchdog.observers.polling import PollingObserver
 
-from cli_agent_orchestrator.clients.database import (
-    create_inbox_message,
-    get_inbox_messages,
-    get_terminal_metadata,
-    init_db,
-)
-from cli_agent_orchestrator.constants import (
-    ALLOWED_HOSTS,
-    CAO_HOME_DIR,
-    CORS_ORIGINS,
-    INBOX_POLLING_INTERVAL,
-    SERVER_HOST,
-    SERVER_PORT,
-    SERVER_VERSION,
-    TERMINAL_LOG_DIR,
-)
+from cli_agent_orchestrator.clients.database import create_inbox_message
+from cli_agent_orchestrator.clients.database import get_inbox_messages
+from cli_agent_orchestrator.clients.database import get_terminal_metadata
+from cli_agent_orchestrator.clients.database import init_db
+from cli_agent_orchestrator.constants import ALLOWED_HOSTS
+from cli_agent_orchestrator.constants import CAO_HOME_DIR
+from cli_agent_orchestrator.constants import CORS_ORIGINS
+from cli_agent_orchestrator.constants import INBOX_POLLING_INTERVAL
+from cli_agent_orchestrator.constants import SERVER_HOST
+from cli_agent_orchestrator.constants import SERVER_PORT
+from cli_agent_orchestrator.constants import SERVER_VERSION
+from cli_agent_orchestrator.constants import TERMINAL_LOG_DIR
 from cli_agent_orchestrator.models.flow import Flow
-from cli_agent_orchestrator.models.inbox import MessageStatus, OrchestrationType
-from cli_agent_orchestrator.models.terminal import Terminal, TerminalId
+from cli_agent_orchestrator.models.inbox import MessageStatus
+from cli_agent_orchestrator.models.inbox import OrchestrationType
+from cli_agent_orchestrator.models.terminal import Terminal
+from cli_agent_orchestrator.models.terminal import TerminalId
 from cli_agent_orchestrator.plugins import PluginRegistry
 from cli_agent_orchestrator.providers.manager import provider_manager
-from cli_agent_orchestrator.services import (
-    flow_service,
-    inbox_service,
-    session_service,
-    terminal_service,
-)
+from cli_agent_orchestrator.services import flow_service
+from cli_agent_orchestrator.services import inbox_service
+from cli_agent_orchestrator.services import session_service
+from cli_agent_orchestrator.services import terminal_service
 from cli_agent_orchestrator.services.cleanup_service import cleanup_old_data
 from cli_agent_orchestrator.services.inbox_service import LogFileHandler
 from cli_agent_orchestrator.services.terminal_service import OutputMode
 from cli_agent_orchestrator.utils.agent_profiles import resolve_provider
 from cli_agent_orchestrator.utils.logging import setup_logging
-from cli_agent_orchestrator.utils.skills import (
-    SkillNameError,
-    load_skill_content,
-    validate_skill_name,
-)
-from cli_agent_orchestrator.utils.terminal import generate_session_name
+from cli_agent_orchestrator.utils.skills import SkillNameError
+from cli_agent_orchestrator.utils.skills import load_skill_content
+from cli_agent_orchestrator.utils.skills import validate_skill_name
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class SkillContentResponse(BaseModel):
 class WorkingDirectoryResponse(BaseModel):
     """Response model for terminal working directory."""
 
-    working_directory: Optional[str] = Field(
+    working_directory: str | None = Field(
         description="Current working directory of the terminal, or None if unavailable"
     )
 
@@ -198,7 +199,7 @@ async def health_check():
 
 
 @app.get("/agents/profiles")
-async def list_agent_profiles_endpoint() -> List[Dict]:
+async def list_agent_profiles_endpoint() -> list[dict]:
     """List all available agent profiles from all configured directories."""
     try:
         from cli_agent_orchestrator.utils.agent_profiles import list_agent_profiles
@@ -212,7 +213,7 @@ async def list_agent_profiles_endpoint() -> List[Dict]:
 
 
 @app.get("/agents/providers")
-async def list_providers_endpoint() -> List[Dict]:
+async def list_providers_endpoint() -> list[dict]:
     """List available providers with installation status."""
     import shutil
 
@@ -233,29 +234,25 @@ async def list_providers_endpoint() -> List[Dict]:
 
 
 @app.get("/settings/agent-dirs")
-async def get_agent_dirs_endpoint() -> Dict:
+async def get_agent_dirs_endpoint() -> dict:
     """Get configured agent directories per provider."""
-    from cli_agent_orchestrator.services.settings_service import (
-        get_agent_dirs,
-        get_extra_agent_dirs,
-    )
+    from cli_agent_orchestrator.services.settings_service import get_agent_dirs
+    from cli_agent_orchestrator.services.settings_service import get_extra_agent_dirs
 
     return {"agent_dirs": get_agent_dirs(), "extra_dirs": get_extra_agent_dirs()}
 
 
 class AgentDirsUpdate(BaseModel):
-    agent_dirs: Optional[Dict[str, str]] = None
-    extra_dirs: Optional[List[str]] = None
+    agent_dirs: dict[str, str] | None = None
+    extra_dirs: list[str] | None = None
 
 
 @app.post("/settings/agent-dirs")
-async def set_agent_dirs_endpoint(body: AgentDirsUpdate) -> Dict:
+async def set_agent_dirs_endpoint(body: AgentDirsUpdate) -> dict:
     """Update agent directories per provider."""
-    from cli_agent_orchestrator.services.settings_service import (
-        get_extra_agent_dirs,
-        set_agent_dirs,
-        set_extra_agent_dirs,
-    )
+    from cli_agent_orchestrator.services.settings_service import get_extra_agent_dirs
+    from cli_agent_orchestrator.services.settings_service import set_agent_dirs
+    from cli_agent_orchestrator.services.settings_service import set_extra_agent_dirs
 
     result_dirs = {}
     result_extra = []
@@ -303,9 +300,9 @@ async def create_session(
     request: Request,
     provider: str,
     agent_profile: str,
-    session_name: Optional[str] = None,
-    working_directory: Optional[str] = None,
-    allowed_tools: Optional[str] = None,
+    session_name: str | None = None,
+    working_directory: str | None = None,
+    allowed_tools: str | None = None,
 ) -> Terminal:
     """Create a new session with exactly one terminal."""
     try:
@@ -332,7 +329,7 @@ async def create_session(
 
 
 @app.get("/sessions")
-async def list_sessions() -> List[Dict]:
+async def list_sessions() -> list[dict]:
     try:
         return session_service.list_sessions()
     except Exception as e:
@@ -343,7 +340,7 @@ async def list_sessions() -> List[Dict]:
 
 
 @app.get("/sessions/{session_name}")
-async def get_session(session_name: str) -> Dict:
+async def get_session(session_name: str) -> dict:
     try:
         return session_service.get_session(session_name)
     except ValueError as e:
@@ -356,7 +353,7 @@ async def get_session(session_name: str) -> Dict:
 
 
 @app.delete("/sessions/{session_name}")
-async def delete_session(request: Request, session_name: str) -> Dict:
+async def delete_session(request: Request, session_name: str) -> dict:
     try:
         result = session_service.delete_session(session_name, registry=get_plugin_registry(request))
         return {"success": True, **result}
@@ -379,8 +376,8 @@ async def create_terminal_in_session(
     session_name: str,
     provider: str,
     agent_profile: str,
-    working_directory: Optional[str] = None,
-    allowed_tools: Optional[str] = None,
+    working_directory: str | None = None,
+    allowed_tools: str | None = None,
 ) -> Terminal:
     """Create additional terminal in existing session."""
     try:
@@ -409,7 +406,7 @@ async def create_terminal_in_session(
 
 
 @app.get("/sessions/{session_name}/terminals")
-async def list_terminals_in_session(session_name: str) -> List[Dict]:
+async def list_terminals_in_session(session_name: str) -> list[dict]:
     """List all terminals in a session."""
     try:
         from cli_agent_orchestrator.clients.database import list_terminals_by_session
@@ -456,9 +453,9 @@ async def send_terminal_input(
     request: Request,
     terminal_id: TerminalId,
     message: str,
-    sender_id: Optional[str] = None,
-    orchestration_type: Optional[OrchestrationType] = None,
-) -> Dict:
+    sender_id: str | None = None,
+    orchestration_type: OrchestrationType | None = None,
+) -> dict:
     try:
         success = terminal_service.send_input(
             terminal_id,
@@ -478,9 +475,7 @@ async def send_terminal_input(
 
 
 @app.get("/terminals/{terminal_id}/output", response_model=TerminalOutputResponse)
-async def get_terminal_output(
-    terminal_id: TerminalId, mode: OutputMode = OutputMode.FULL
-) -> TerminalOutputResponse:
+async def get_terminal_output(terminal_id: TerminalId, mode: OutputMode = OutputMode.FULL) -> TerminalOutputResponse:
     try:
         output = terminal_service.get_output(terminal_id, mode)
         return TerminalOutputResponse(output=output, mode=mode)
@@ -494,7 +489,7 @@ async def get_terminal_output(
 
 
 @app.post("/terminals/{terminal_id}/exit")
-async def exit_terminal(terminal_id: TerminalId) -> Dict:
+async def exit_terminal(terminal_id: TerminalId) -> dict:
     """Send provider-specific exit command to terminal."""
     try:
         provider = provider_manager.get_provider(terminal_id)
@@ -519,12 +514,10 @@ async def exit_terminal(terminal_id: TerminalId) -> Dict:
 
 
 @app.delete("/terminals/{terminal_id}")
-async def delete_terminal(request: Request, terminal_id: TerminalId) -> Dict:
+async def delete_terminal(request: Request, terminal_id: TerminalId) -> dict:
     """Delete a terminal."""
     try:
-        success = terminal_service.delete_terminal(
-            terminal_id, registry=get_plugin_registry(request)
-        )
+        success = terminal_service.delete_terminal(terminal_id, registry=get_plugin_registry(request))
         return {"success": success}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -541,7 +534,7 @@ async def create_inbox_message_endpoint(
     receiver_id: TerminalId,
     sender_id: str,
     message: str,
-) -> Dict:
+) -> dict:
     """Create inbox message and attempt immediate delivery."""
     try:
         inbox_msg = create_inbox_message(
@@ -562,9 +555,7 @@ async def create_inbox_message_endpoint(
     # the terminal becomes idle. Delivery failures must not cause the API
     # to report an error — the message was already persisted above.
     try:
-        inbox_service.check_and_send_pending_messages(
-            receiver_id, registry=get_plugin_registry(request)
-        )
+        inbox_service.check_and_send_pending_messages(receiver_id, registry=get_plugin_registry(request))
     except Exception as e:
         logger.warning(f"Immediate delivery attempt failed for {receiver_id}: {e}")
 
@@ -581,10 +572,8 @@ async def create_inbox_message_endpoint(
 async def get_inbox_messages_endpoint(
     terminal_id: TerminalId,
     limit: int = Query(default=10, le=100, description="Maximum number of messages to retrieve"),
-    status_param: Optional[str] = Query(
-        default=None, alias="status", description="Filter by message status"
-    ),
-) -> List[Dict]:
+    status_param: str | None = Query(default=None, alias="status", description="Filter by message status"),
+) -> list[dict]:
     """Get inbox messages for a terminal.
 
     Args:
@@ -715,7 +704,7 @@ async def terminal_ws(websocket: WebSocket, terminal_id: str):
                     except asyncio.QueueEmpty:
                         break
                 await websocket.send_bytes(data)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 if proc.poll() is not None:
                     break
             except (Exception, asyncio.CancelledError):
@@ -772,7 +761,7 @@ async def terminal_ws(websocket: WebSocket, terminal_id: str):
         proc.terminate()
         try:
             await asyncio.wait_for(asyncio.to_thread(proc.wait), timeout=3.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             proc.kill()
             await asyncio.to_thread(proc.wait)
 
@@ -780,8 +769,8 @@ async def terminal_ws(websocket: WebSocket, terminal_id: str):
 # ── Flow management endpoints ────────────────────────────────────────
 
 
-@app.get("/flows", response_model=List[Flow])
-async def list_flows() -> List[Flow]:
+@app.get("/flows", response_model=list[Flow])
+async def list_flows() -> list[Flow]:
     """List all flows."""
     try:
         return flow_service.list_flows()
@@ -843,7 +832,7 @@ async def create_flow(body: CreateFlowRequest) -> Flow:
 
 
 @app.delete("/flows/{name}")
-async def remove_flow(name: str) -> Dict:
+async def remove_flow(name: str) -> dict:
     """Remove a flow."""
     try:
         flow_service.remove_flow(name)
@@ -858,7 +847,7 @@ async def remove_flow(name: str) -> Dict:
 
 
 @app.post("/flows/{name}/enable")
-async def enable_flow(name: str) -> Dict:
+async def enable_flow(name: str) -> dict:
     """Enable a flow."""
     try:
         flow_service.enable_flow(name)
@@ -873,7 +862,7 @@ async def enable_flow(name: str) -> Dict:
 
 
 @app.post("/flows/{name}/disable")
-async def disable_flow(name: str) -> Dict:
+async def disable_flow(name: str) -> dict:
     """Disable a flow."""
     try:
         flow_service.disable_flow(name)
@@ -888,7 +877,7 @@ async def disable_flow(name: str) -> Dict:
 
 
 @app.post("/flows/{name}/run")
-async def run_flow(name: str) -> Dict:
+async def run_flow(name: str) -> dict:
     """Manually execute a flow."""
     try:
         executed = flow_service.execute_flow(name)

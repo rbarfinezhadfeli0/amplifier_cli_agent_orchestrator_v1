@@ -2,7 +2,8 @@
 
 import click
 
-from cli_agent_orchestrator.services.session_service import delete_session, list_sessions
+from cli_agent_orchestrator.services.session_service import delete_session
+from cli_agent_orchestrator.services.session_service import list_sessions
 
 
 @click.command()

@@ -1,11 +1,10 @@
 """MCP server utilities."""
 
-from typing import Optional
+from cli_agent_orchestrator.clients.database import SessionLocal
+from cli_agent_orchestrator.clients.database import TerminalModel
 
-from cli_agent_orchestrator.clients.database import SessionLocal, TerminalModel
 
-
-def get_terminal_record(terminal_id: str) -> Optional[TerminalModel]:
+def get_terminal_record(terminal_id: str) -> TerminalModel | None:
     """Get full terminal record for a given terminal_id from database."""
     db = SessionLocal()
     try:

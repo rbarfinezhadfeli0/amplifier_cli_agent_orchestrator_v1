@@ -1,20 +1,17 @@
 """Tests for settings_service module."""
 
 import json
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.services.settings_service import (
-    _DEFAULTS,
-    _load,
-    _save,
-    get_agent_dirs,
-    get_extra_agent_dirs,
-    set_agent_dirs,
-    set_extra_agent_dirs,
-)
+from cli_agent_orchestrator.services.settings_service import _DEFAULTS
+from cli_agent_orchestrator.services.settings_service import _load
+from cli_agent_orchestrator.services.settings_service import _save
+from cli_agent_orchestrator.services.settings_service import get_agent_dirs
+from cli_agent_orchestrator.services.settings_service import get_extra_agent_dirs
+from cli_agent_orchestrator.services.settings_service import set_agent_dirs
+from cli_agent_orchestrator.services.settings_service import set_extra_agent_dirs
 
 
 @pytest.fixture

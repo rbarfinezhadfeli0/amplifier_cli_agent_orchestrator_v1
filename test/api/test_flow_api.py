@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.api.main import app
 from cli_agent_orchestrator.models.flow import Flow
 
 

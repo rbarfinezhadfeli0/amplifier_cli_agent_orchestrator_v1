@@ -1,11 +1,9 @@
 """Tests for logging utility."""
 
-import logging
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from cli_agent_orchestrator.utils.logging import setup_logging
 
@@ -21,9 +19,8 @@ class TestSetupLogging:
             mock_log_dir.__truediv__ = lambda self, x: Path(tmpdir) / x
             mock_log_dir.mkdir = MagicMock()
 
-            with patch.dict("os.environ", {}, clear=True):
-                with patch("builtins.print"):
-                    setup_logging()
+            with patch.dict("os.environ", {}, clear=True), patch("builtins.print"):
+                setup_logging()
 
             mock_basic_config.assert_called_once()
             call_kwargs = mock_basic_config.call_args[1]
@@ -37,9 +34,8 @@ class TestSetupLogging:
             mock_log_dir.__truediv__ = lambda self, x: Path(tmpdir) / x
             mock_log_dir.mkdir = MagicMock()
 
-            with patch.dict("os.environ", {"CAO_LOG_LEVEL": "DEBUG"}):
-                with patch("builtins.print"):
-                    setup_logging()
+            with patch.dict("os.environ", {"CAO_LOG_LEVEL": "DEBUG"}), patch("builtins.print"):
+                setup_logging()
 
             mock_basic_config.assert_called_once()
             call_kwargs = mock_basic_config.call_args[1]
@@ -53,9 +49,8 @@ class TestSetupLogging:
             mock_log_dir.__truediv__ = lambda self, x: Path(tmpdir) / x
             mock_log_dir.mkdir = MagicMock()
 
-            with patch.dict("os.environ", {"CAO_LOG_LEVEL": "warning"}):
-                with patch("builtins.print"):
-                    setup_logging()
+            with patch.dict("os.environ", {"CAO_LOG_LEVEL": "warning"}), patch("builtins.print"):
+                setup_logging()
 
             mock_basic_config.assert_called_once()
             call_kwargs = mock_basic_config.call_args[1]

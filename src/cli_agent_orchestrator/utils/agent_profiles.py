@@ -3,11 +3,11 @@
 import logging
 from importlib import resources
 from pathlib import Path
-from typing import Dict, List
 
 import frontmatter
 
-from cli_agent_orchestrator.constants import LOCAL_AGENT_STORE_DIR, PROVIDERS
+from cli_agent_orchestrator.constants import LOCAL_AGENT_STORE_DIR
+from cli_agent_orchestrator.constants import PROVIDERS
 from cli_agent_orchestrator.models.agent_profile import AgentProfile
 from cli_agent_orchestrator.utils.env import resolve_env_vars
 
@@ -20,7 +20,7 @@ def _validate_agent_name(agent_name: str) -> None:
         raise ValueError(f"Invalid agent name '{agent_name}': must not contain '/', '\\', or '..'")
 
 
-def _scan_directory(directory: Path, source_label: str, profiles: Dict[str, Dict]) -> None:
+def _scan_directory(directory: Path, source_label: str, profiles: dict[str, dict]) -> None:
     """Scan a directory for agent profiles (.md files, .json files, or subdirectories)."""
     if not directory.exists():
         return
@@ -58,18 +58,16 @@ def _scan_directory(directory: Path, source_label: str, profiles: Dict[str, Dict
                 }
 
 
-def list_agent_profiles() -> List[Dict]:
+def list_agent_profiles() -> list[dict]:
     """Discover all available agent profiles from all configured directories.
 
     Scans built-in store, local store, and all provider agent directories
     (from settings or defaults). Returns deduplicated list sorted by name.
     """
-    from cli_agent_orchestrator.services.settings_service import (
-        get_agent_dirs,
-        get_extra_agent_dirs,
-    )
+    from cli_agent_orchestrator.services.settings_service import get_agent_dirs
+    from cli_agent_orchestrator.services.settings_service import get_extra_agent_dirs
 
-    profiles: Dict[str, Dict] = {}
+    profiles: dict[str, dict] = {}
 
     # 1. Built-in agent store
     try:
@@ -150,10 +148,8 @@ def load_agent_profile(agent_name: str) -> AgentProfile:
     """
     _validate_agent_name(agent_name)
 
-    from cli_agent_orchestrator.services.settings_service import (
-        get_agent_dirs,
-        get_extra_agent_dirs,
-    )
+    from cli_agent_orchestrator.services.settings_service import get_agent_dirs
+    from cli_agent_orchestrator.services.settings_service import get_extra_agent_dirs
 
     try:
         # 1. Check local store first (flat .md files)
@@ -228,14 +224,12 @@ def resolve_provider(agent_profile_name: str, fallback_provider: str) -> str:
     if profile.provider:
         if profile.provider in PROVIDERS:
             return profile.provider
-        else:
-            logger.warning(
-                "Agent profile '%s' has invalid provider '%s'. "
-                "Valid providers: %s. Falling back to '%s'.",
-                agent_profile_name,
-                profile.provider,
-                PROVIDERS,
-                fallback_provider,
-            )
+        logger.warning(
+            "Agent profile '%s' has invalid provider '%s'. Valid providers: %s. Falling back to '%s'.",
+            agent_profile_name,
+            profile.provider,
+            PROVIDERS,
+            fallback_provider,
+        )
 
     return fallback_provider

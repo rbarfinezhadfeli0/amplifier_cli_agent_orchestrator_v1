@@ -4,10 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
-from cli_agent_orchestrator.services.terminal_service import (
-    get_working_directory,
-    send_special_key,
-)
+from cli_agent_orchestrator.services.terminal_service import get_working_directory
+from cli_agent_orchestrator.services.terminal_service import send_special_key
 
 
 class TestTerminalServiceWorkingDirectory:
@@ -32,9 +30,7 @@ class TestTerminalServiceWorkingDirectory:
         # Assert
         assert result == expected_dir
         mock_get_metadata.assert_called_once_with(terminal_id)
-        mock_tmux_client.get_pane_working_directory.assert_called_once_with(
-            "test-session", "test-window"
-        )
+        mock_tmux_client.get_pane_working_directory.assert_called_once_with("test-session", "test-window")
 
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
@@ -69,15 +65,11 @@ class TestTerminalServiceWorkingDirectory:
         # Assert
         assert result is None
         mock_get_metadata.assert_called_once_with(terminal_id)
-        mock_tmux_client.get_pane_working_directory.assert_called_once_with(
-            "test-session", "test-window"
-        )
+        mock_tmux_client.get_pane_working_directory.assert_called_once_with("test-session", "test-window")
 
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_get_working_directory_returns_directory_from_tmux_pane(
-        self, mock_get_metadata, mock_tmux_client
-    ):
+    def test_get_working_directory_returns_directory_from_tmux_pane(self, mock_get_metadata, mock_tmux_client):
         """Test that get_working_directory returns the directory obtained from tmux pane."""
         # Arrange
         terminal_id = "test-terminal-789"
@@ -93,15 +85,11 @@ class TestTerminalServiceWorkingDirectory:
 
         # Assert
         assert result == pane_dir
-        mock_tmux_client.get_pane_working_directory.assert_called_once_with(
-            "cao-workspace", "developer-xyz"
-        )
+        mock_tmux_client.get_pane_working_directory.assert_called_once_with("cao-workspace", "developer-xyz")
 
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_get_working_directory_raises_for_nonexistent_terminal(
-        self, mock_get_metadata, mock_tmux_client
-    ):
+    def test_get_working_directory_raises_for_nonexistent_terminal(self, mock_get_metadata, mock_tmux_client):
         """Test that get_working_directory raises ValueError for a terminal that does not exist."""
         # Arrange
         mock_get_metadata.return_value = None
@@ -135,17 +123,13 @@ class TestSendSpecialKey:
 
         # Assert
         assert result is True
-        mock_tmux_client.send_special_key.assert_called_once_with(
-            "cao-session", "developer-abcd", "C-d"
-        )
+        mock_tmux_client.send_special_key.assert_called_once_with("cao-session", "developer-abcd", "C-d")
         mock_update_last_active.assert_called_once_with(terminal_id)
 
     @patch("cli_agent_orchestrator.services.terminal_service.update_last_active")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_send_special_key_ctrl_c(
-        self, mock_get_metadata, mock_tmux_client, mock_update_last_active
-    ):
+    def test_send_special_key_ctrl_c(self, mock_get_metadata, mock_tmux_client, mock_update_last_active):
         """Test that send_special_key can send C-c (Ctrl+C) to a terminal."""
         # Arrange
         terminal_id = "test-terminal-002"
@@ -159,9 +143,7 @@ class TestSendSpecialKey:
 
         # Assert
         assert result is True
-        mock_tmux_client.send_special_key.assert_called_once_with(
-            "cao-session", "reviewer-efgh", "C-c"
-        )
+        mock_tmux_client.send_special_key.assert_called_once_with("cao-session", "reviewer-efgh", "C-c")
 
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
@@ -195,9 +177,7 @@ class TestSendSpecialKey:
     @patch("cli_agent_orchestrator.services.terminal_service.update_last_active")
     @patch("cli_agent_orchestrator.services.terminal_service.tmux_client")
     @patch("cli_agent_orchestrator.services.terminal_service.get_terminal_metadata")
-    def test_send_special_key_escape(
-        self, mock_get_metadata, mock_tmux_client, mock_update_last_active
-    ):
+    def test_send_special_key_escape(self, mock_get_metadata, mock_tmux_client, mock_update_last_active):
         """Test that send_special_key can send Escape key."""
         # Arrange
         terminal_id = "test-terminal-004"
@@ -211,6 +191,4 @@ class TestSendSpecialKey:
 
         # Assert
         assert result is True
-        mock_tmux_client.send_special_key.assert_called_once_with(
-            "cao-session", "developer-mnop", "Escape"
-        )
+        mock_tmux_client.send_special_key.assert_called_once_with("cao-session", "developer-mnop", "Escape")

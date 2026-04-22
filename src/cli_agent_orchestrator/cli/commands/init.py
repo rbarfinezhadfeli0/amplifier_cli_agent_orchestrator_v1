@@ -37,9 +37,6 @@ def init():
     try:
         init_db()
         seeded_count = seed_default_skills()
-        click.echo(
-            f"CLI Agent Orchestrator initialized successfully. "
-            f"Seeded {seeded_count} builtin skills."
-        )
+        click.echo(f"CLI Agent Orchestrator initialized successfully. Seeded {seeded_count} builtin skills.")
     except Exception as e:
         raise click.ClickException(str(e))

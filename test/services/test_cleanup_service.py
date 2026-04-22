@@ -1,11 +1,11 @@
 """Tests for cleanup service."""
 
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from cli_agent_orchestrator.services.cleanup_service import cleanup_old_data
 
@@ -17,9 +17,7 @@ class TestCleanupOldData:
     @patch("cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.RETENTION_DAYS", 7)
-    def test_cleanup_old_data_deletes_old_terminals(
-        self, mock_log_dir, mock_terminal_log_dir, mock_session_local
-    ):
+    def test_cleanup_old_data_deletes_old_terminals(self, mock_log_dir, mock_terminal_log_dir, mock_session_local):
         """Test that cleanup deletes old terminals from database."""
         # Setup mock database session
         mock_db = MagicMock()
@@ -41,9 +39,7 @@ class TestCleanupOldData:
     @patch("cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.RETENTION_DAYS", 7)
-    def test_cleanup_old_data_deletes_old_inbox_messages(
-        self, mock_log_dir, mock_terminal_log_dir, mock_session_local
-    ):
+    def test_cleanup_old_data_deletes_old_inbox_messages(self, mock_log_dir, mock_terminal_log_dir, mock_session_local):
         """Test that cleanup deletes old inbox messages from database."""
         # Setup mock database session
         mock_db = MagicMock()
@@ -87,15 +83,17 @@ class TestCleanupOldData:
             new_log = terminal_log_dir / "new.log"
             new_log.write_text("new log content")
 
-            with patch(
-                "cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR",
-                terminal_log_dir,
-            ):
-                with patch(
+            with (
+                patch(
+                    "cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR",
+                    terminal_log_dir,
+                ),
+                patch(
                     "cli_agent_orchestrator.services.cleanup_service.LOG_DIR",
                     Path(tmpdir) / "nonexistent",
-                ):
-                    cleanup_old_data()
+                ),
+            ):
+                cleanup_old_data()
 
             # Verify old log was deleted, new log remains
             assert not old_log.exists()
@@ -127,15 +125,17 @@ class TestCleanupOldData:
             new_log = log_dir / "server_new.log"
             new_log.write_text("new server log")
 
-            with patch(
-                "cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR",
-                Path(tmpdir) / "nonexistent",
-            ):
-                with patch(
+            with (
+                patch(
+                    "cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR",
+                    Path(tmpdir) / "nonexistent",
+                ),
+                patch(
                     "cli_agent_orchestrator.services.cleanup_service.LOG_DIR",
                     log_dir,
-                ):
-                    cleanup_old_data()
+                ),
+            ):
+                cleanup_old_data()
 
             # Verify old log was deleted, new log remains
             assert not old_log.exists()
@@ -145,9 +145,7 @@ class TestCleanupOldData:
     @patch("cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.RETENTION_DAYS", 7)
-    def test_cleanup_old_data_handles_database_error(
-        self, mock_log_dir, mock_terminal_log_dir, mock_session_local
-    ):
+    def test_cleanup_old_data_handles_database_error(self, mock_log_dir, mock_terminal_log_dir, mock_session_local):
         """Test that cleanup handles database errors gracefully."""
         # Setup mock database session to raise an error
         mock_session_local.return_value.__enter__.side_effect = Exception("Database error")
@@ -163,9 +161,7 @@ class TestCleanupOldData:
     @patch("cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.LOG_DIR")
     @patch("cli_agent_orchestrator.services.cleanup_service.RETENTION_DAYS", 7)
-    def test_cleanup_old_data_handles_empty_directories(
-        self, mock_log_dir, mock_terminal_log_dir, mock_session_local
-    ):
+    def test_cleanup_old_data_handles_empty_directories(self, mock_log_dir, mock_terminal_log_dir, mock_session_local):
         """Test that cleanup handles empty or non-existent directories."""
         # Setup mock database session
         mock_db = MagicMock()
@@ -200,9 +196,7 @@ class TestCleanupOldData:
 
         mock_db.query.return_value.filter = capture_filter
 
-        with patch(
-            "cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR"
-        ) as mock_terminal:
+        with patch("cli_agent_orchestrator.services.cleanup_service.TERMINAL_LOG_DIR") as mock_terminal:
             with patch("cli_agent_orchestrator.services.cleanup_service.LOG_DIR") as mock_log:
                 mock_terminal.exists.return_value = False
                 mock_log.exists.return_value = False

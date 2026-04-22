@@ -1,18 +1,19 @@
 """Agent profile models."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic import Field
 
 
 class McpServer(BaseModel):
     """MCP server configuration."""
 
-    type: Optional[str] = None
+    type: str | None = None
     command: str
-    args: Optional[List[str]] = None
-    env: Optional[Dict[str, str]] = None
-    timeout: Optional[int] = None
+    args: list[str] | None = None
+    env: dict[str, str] | None = None
+    timeout: int | None = None
 
 
 class AgentProfile(BaseModel):
@@ -20,18 +21,18 @@ class AgentProfile(BaseModel):
 
     name: str
     description: str
-    provider: Optional[str] = None  # Provider override (e.g. "claude_code", "kiro_cli")
-    system_prompt: Optional[str] = None  # The markdown content
-    role: Optional[str] = None  # "supervisor", "developer", "reviewer"
+    provider: str | None = None  # Provider override (e.g. "claude_code", "kiro_cli")
+    system_prompt: str | None = None  # The markdown content
+    role: str | None = None  # "supervisor", "developer", "reviewer"
 
     # Q CLI agent fields (all optional, will be passed through to JSON)
-    prompt: Optional[str] = None
-    mcpServers: Optional[Dict[str, Any]] = None
-    tools: Optional[List[str]] = Field(default=None)
-    toolAliases: Optional[Dict[str, str]] = None
-    allowedTools: Optional[List[str]] = None
-    toolsSettings: Optional[Dict[str, Any]] = None
-    resources: Optional[List[str]] = None
-    hooks: Optional[Dict[str, Any]] = None
-    useLegacyMcpJson: Optional[bool] = None
-    model: Optional[str] = None
+    prompt: str | None = None
+    mcpServers: dict[str, Any] | None = None
+    tools: list[str] | None = Field(default=None)
+    toolAliases: dict[str, str] | None = None
+    allowedTools: list[str] | None = None
+    toolsSettings: dict[str, Any] | None = None
+    resources: list[str] | None = None
+    hooks: dict[str, Any] | None = None
+    useLegacyMcpJson: bool | None = None
+    model: str | None = None
