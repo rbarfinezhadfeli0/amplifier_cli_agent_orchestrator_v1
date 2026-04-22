@@ -19,3 +19,5 @@
 [2026-04-21 22:28:28.981] [stop_hook] [INFO] Memory system disabled via MEMORY_SYSTEM_ENABLED env var
 [2026-04-21 22:28:31.754] [stop_hook] [INFO] Logger initialized for stop_hook
 [2026-04-21 22:28:32.194] [stop_hook] [INFO] Memory system disabled via MEMORY_SYSTEM_ENABLED env var
+[2026-04-21 22:28:44.234] [stop_hook] [INFO] Logger initialized for stop_hook
+[2026-04-21 22:28:44.650] [stop_hook] [INFO] Memory system disabled via MEMORY_SYSTEM_ENABLED env var
